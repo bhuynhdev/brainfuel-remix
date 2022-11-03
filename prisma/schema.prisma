@@ -14,6 +14,6 @@ model Note {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  title     String
+  title     String   @default("Untitled")
   content   String
 }

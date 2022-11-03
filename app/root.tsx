@@ -1,6 +1,7 @@
 import type { LinksFunction, MetaFunction } from '@remix-run/node';
 import { Link, Links, LiveReload, Meta, Outlet, Scripts, ScrollRestoration } from '@remix-run/react';
-import styles from '~/styles/app.css';
+import globalStyles from './styles/global.css';
+import tailwindStyles from './styles/app.css';
 
 export const meta: MetaFunction = () => ({
 	charset: 'utf-8',
@@ -9,12 +10,15 @@ export const meta: MetaFunction = () => ({
 });
 
 export const links: LinksFunction = () => {
-	return [{ rel: 'stylesheet', href: styles }];
+	return [
+		{ rel: 'stylesheet', href: globalStyles },
+		{ rel: 'stylesheet', href: tailwindStyles },
+	];
 };
 
 const Header: React.FC = () => {
 	return (
-		<header className="py-4 flex flex-row justify-between items-center">
+		<header className="flex flex-row items-center justify-between py-4">
 			<div>Logo</div>
 			<nav>
 				<ul className="flex flex-row gap-12">
@@ -40,7 +44,7 @@ export default function App() {
 				<Meta />
 				<Links />
 			</head>
-			<body className="px-4">
+			<body className="flex min-h-screen flex-col bg-gray-200 px-4 text-base">
 				<Header />
 				<Outlet />
 				<ScrollRestoration />
