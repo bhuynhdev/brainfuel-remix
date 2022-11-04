@@ -1,0 +1,6 @@
+.main-grid {
+	min-height: 0; /* Override default "auto" min-width to prevent blowout: https://css-tricks.com/preventing-a-grid-blowout/ */
+	display: grid;
+	grid-template-columns: max(20%, 240px) minmax(0, 1fr);
+	gap: 2em;
+}

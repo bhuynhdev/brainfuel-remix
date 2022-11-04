@@ -1,7 +1,7 @@
 import { LinksFunction, json, ActionArgs, redirect } from '@remix-run/node';
 import { Outlet } from '@remix-run/react';
 import { useLoaderData, Link } from '@remix-run/react';
-import styles from '~/styles/index.css';
+import styles from '~/styles/notes.css';
 import { db } from '~/utils/db.server';
 
 export const links: LinksFunction = () => {
@@ -25,8 +25,8 @@ export default function Index() {
 	return (
 		<>
 			<main className="main-grid">
-				<div id="note-list" className="rounded-md bg-white p-3 shadow-md">
-					<div className="mb-4 flex flex-row justify-between">
+				<div id="note-list" className="flex flex-col rounded-md bg-white p-3 shadow-md">
+					<div className="mb-4 flex flex-row items-center justify-between">
 						<h1 className="text-2xl font-bold">Your Notes</h1>
 						<form method="POST" action="/notes">
 							<button className="rounded-3xl bg-blue-500 px-4 py-2 font-bold uppercase tracking-wider text-white">
@@ -34,7 +34,7 @@ export default function Index() {
 							</button>
 						</form>
 					</div>
-					<ul className="flex flex-col gap-4">
+					<ul className="flex flex-col gap-4 overflow-y-scroll">
 						{notes.map((note) => (
 							<li key={note.id}>
 								<Link to={note.id}>

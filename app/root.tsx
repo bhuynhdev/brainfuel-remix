@@ -44,7 +44,7 @@ export default function App() {
 				<Meta />
 				<Links />
 			</head>
-			<body className="flex min-h-screen flex-col bg-gray-200 px-4 text-base">
+			<body className="flex h-screen flex-col bg-gray-200 px-4 text-base">
 				<Header />
 				<Outlet />
 				<ScrollRestoration />
