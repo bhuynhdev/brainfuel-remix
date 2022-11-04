@@ -37,10 +37,16 @@ interface NoteProps {
 
 const Note: React.FC<NoteProps> = () => {
 	const { note, editMode } = useLoaderData<typeof loader>();
-	const [title, setTitle] = useState(note?.title || '');
-	const [content, setContent] = useState(note?.content || '');
+	const [title, setTitle] = useState('');
+	const [content, setContent] = useState('');
 	const [isEditing, setIsEditting] = useState(editMode);
 	const submit = useSubmit();
+
+	useEffect(() => {
+		// reset initial states when route changes
+		setTitle(note?.title || '');
+		setContent(note?.content || '');
+	}, [note?.title, note?.content]);
 
 	useEffect(() => {
 		textAreaRef.current?.focus();
@@ -54,7 +60,7 @@ const Note: React.FC<NoteProps> = () => {
 	const textAreaRef = useRef<HTMLTextAreaElement>(null);
 	if (!isEditing) {
 		return (
-			<div className="relative">
+			<div className="relative" key={note?.id}>
 				<h1 className="mb-12 text-5xl font-bold">{note?.title || ''}</h1>
 				<button
 					type="button"
@@ -72,7 +78,7 @@ const Note: React.FC<NoteProps> = () => {
 
 	// Edit mode
 	return (
-		<div className="grid h-full grid-cols-2 gap-24">
+		<div className="grid h-full grid-cols-2 gap-24" key={note?.id}>
 			<form id="markdown-form" className="flex flex-col gap-3" method="post" onSubmit={handleSaveNote}>
 				<div>
 					<label htmlFor="markdown-title" className="sr-only">
