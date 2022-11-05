@@ -534,12 +534,16 @@ video {
   position: sticky;
 }
 
-.top-0 {
-  top: 0px;
+.-top-5 {
+  top: -1.25rem;
 }
 
 .right-0 {
   right: 0px;
+}
+
+.top-0 {
+  top: 0px;
 }
 
 .mb-4 {
@@ -566,8 +570,8 @@ video {
   width: 100%;
 }
 
-.grid-cols-2 {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+.grid-cols-\[45\%\2c minmax\(0\2c 55\%\)\] {
+  grid-template-columns: 45% minmax(0,55%);
 }
 
 .flex-row {
@@ -590,20 +594,16 @@ video {
   gap: 3rem;
 }
 
-.gap-4 {
-  gap: 1rem;
-}
-
-.gap-24 {
-  gap: 6rem;
+.gap-10 {
+  gap: 2.5rem;
 }
 
 .gap-3 {
   gap: 0.75rem;
 }
 
-.gap-10 {
-  gap: 2.5rem;
+.gap-4 {
+  gap: 1rem;
 }
 
 .self-start {
@@ -614,16 +614,16 @@ video {
   overflow-y: auto;
 }
 
-.rounded-md {
-  border-radius: 0.375rem;
-}
-
 .rounded-3xl {
   border-radius: 1.5rem;
 }
 
 .rounded-sm {
   border-radius: 0.125rem;
+}
+
+.rounded-md {
+  border-radius: 0.375rem;
 }
 
 .border-2 {
@@ -640,14 +640,14 @@ video {
   background-color: rgb(229 231 235 / var(--tw-bg-opacity));
 }
 
-.bg-white {
-  --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
-}
-
 .bg-blue-500 {
   --tw-bg-opacity: 1;
   background-color: rgb(59 130 246 / var(--tw-bg-opacity));
+}
+
+.bg-white {
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
 }
 
 .p-3 {
@@ -672,14 +672,14 @@ video {
   padding-right: 1rem;
 }
 
-.py-2 {
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
-}
-
 .px-6 {
   padding-left: 1.5rem;
   padding-right: 1.5rem;
+}
+
+.py-2 {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
 }
 
 .px-2 {
@@ -701,13 +701,8 @@ video {
   line-height: 1.5rem;
 }
 
-.text-2xl {
-  font-size: 1.5rem;
-  line-height: 2rem;
-}
-
-.text-lg {
-  font-size: 1.125rem;
+.text-xl {
+  font-size: 1.25rem;
   line-height: 1.75rem;
 }
 
@@ -716,8 +711,13 @@ video {
   line-height: 1;
 }
 
-.text-xl {
-  font-size: 1.25rem;
+.text-2xl {
+  font-size: 1.5rem;
+  line-height: 2rem;
+}
+
+.text-lg {
+  font-size: 1.125rem;
   line-height: 1.75rem;
 }
 
@@ -729,12 +729,12 @@ video {
   text-transform: uppercase;
 }
 
-.tracking-wider {
-  letter-spacing: 0.05em;
-}
-
 .tracking-wide {
   letter-spacing: 0.025em;
+}
+
+.tracking-wider {
+  letter-spacing: 0.05em;
 }
 
 .text-white {

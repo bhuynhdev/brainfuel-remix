@@ -2,11 +2,11 @@ import { ActionArgs, json, LinksFunction, LoaderArgs } from '@remix-run/node';
 import { useLoaderData, useSubmit } from '@remix-run/react';
 import React, { useState } from 'react';
 import { NoteEditor } from '~/components/NoteEditor';
-import styles from '~/styles/singleNote.css';
+import markdownStyles from '~/styles/markdown.css';
 import { db } from '~/utils/db.server';
 
 export const links: LinksFunction = () => {
-	return [{ rel: 'stylesheet', href: styles }];
+	return [{ rel: 'stylesheet', href: markdownStyles }];
 };
 
 export const loader = async ({ params, request }: LoaderArgs) => {
