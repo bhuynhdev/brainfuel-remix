@@ -25,7 +25,10 @@ export default function Index() {
 	return (
 		<>
 			<main className="main-grid">
-				<div id="note-list" className="flex flex-col rounded-md bg-white p-3 shadow-md">
+				<aside
+					id="note-list"
+					className="h-[min(max-content, 90vh)] sticky top-0 flex flex-col self-start rounded-md bg-white p-3 shadow-md"
+				>
 					<div className="mb-4 flex flex-row items-center justify-between">
 						<h1 className="text-2xl font-bold">Your Notes</h1>
 						<form method="POST" action="/notes">
@@ -34,7 +37,7 @@ export default function Index() {
 							</button>
 						</form>
 					</div>
-					<ul className="flex flex-col gap-4 overflow-y-scroll">
+					<ul className="flex flex-col gap-4 overflow-y-auto">
 						{notes.map((note) => (
 							<li key={note.id}>
 								<Link to={note.id}>
@@ -46,7 +49,7 @@ export default function Index() {
 							</li>
 						))}
 					</ul>
-				</div>
+				</aside>
 				<div className="rounded-md bg-white p-14">
 					<Outlet />
 				</div>

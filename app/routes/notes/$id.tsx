@@ -61,6 +61,7 @@ const Note: React.FC<NoteProps> = () => {
 	if (!isEditing) {
 		return (
 			<div className="relative" key={note?.id}>
+				<p className="mb-4">Last updated {note ? new Date(note.createdAt).toDateString() : Date()}</p>
 				<h1 className="mb-12 text-5xl font-bold">{note?.title || ''}</h1>
 				<button
 					type="button"
@@ -103,6 +104,7 @@ const Note: React.FC<NoteProps> = () => {
 				></textarea>
 			</form>
 			<div className="relative">
+				<p className="mb-4">Last updated {note ? new Date(note.createdAt).toDateString() : Date()}</p>
 				<h1 className="mb-12 text-5xl font-bold">{title}</h1>
 				<div id="note-content">
 					<button
@@ -110,7 +112,7 @@ const Note: React.FC<NoteProps> = () => {
 						form="markdown-form"
 						className="absolute top-0 right-0 rounded-3xl bg-blue-500 px-6 py-2 text-white"
 					>
-						Done
+						&#10003; Done
 					</button>
 					<ReactMarkdown>{content}</ReactMarkdown>
 				</div>

@@ -39,12 +39,12 @@ const Header: React.FC = () => {
 
 export default function App() {
 	return (
-		<html lang="en">
+		<html lang="en" className="h-full">
 			<head>
 				<Meta />
 				<Links />
 			</head>
-			<body className="flex h-screen flex-col bg-gray-200 px-4 text-base">
+			<body className="flex h-full flex-col bg-gray-200 px-4 text-base">
 				<Header />
 				<Outlet />
 				<ScrollRestoration />
