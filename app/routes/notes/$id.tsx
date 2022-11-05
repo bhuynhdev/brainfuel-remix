@@ -1,8 +1,13 @@
-import { ActionArgs, json, LoaderArgs } from '@remix-run/node';
+import { ActionArgs, json, LinksFunction, LoaderArgs } from '@remix-run/node';
 import { useLoaderData, useSubmit } from '@remix-run/react';
-import React, { useState, useRef, useEffect, FormEvent } from 'react';
-import ReactMarkdown from 'react-markdown';
+import React, { useState } from 'react';
+import { NoteEditor } from '~/components/NoteEditor';
+import styles from '~/styles/singleNote.css';
 import { db } from '~/utils/db.server';
+
+export const links: LinksFunction = () => {
+	return [{ rel: 'stylesheet', href: styles }];
+};
 
 export const loader = async ({ params, request }: LoaderArgs) => {
 	const url = new URL(request.url);
@@ -31,97 +36,22 @@ export const action = async ({ request, params }: ActionArgs) => {
 	return json({ updatedNote: updatedNote });
 };
 
-interface NoteProps {
-	prop?: string;
-}
+export type LoadedNote = Awaited<ReturnType<typeof useLoaderData<typeof loader>>>['note'];
 
-const Note: React.FC<NoteProps> = () => {
+const Note: React.FC = () => {
 	const { note, editMode } = useLoaderData<typeof loader>();
-	const [title, setTitle] = useState(note?.title || '');
-	const [content, setContent] = useState(note?.content || '');
 	const [isEditing, setIsEditting] = useState(editMode);
+
 	const submit = useSubmit();
 
-	// useEffect(() => {
-	// 	// reset initial states when route changes
-	// 	setTitle(note?.title || '');
-	// 	setContent(note?.content || '');
-	// }, [note?.title, note?.content]);
-
-	useEffect(() => {
-		textAreaRef.current?.focus();
-	}, [isEditing]);
-
-	const handleSaveNote = (e: FormEvent<HTMLFormElement>) => {
-		setIsEditting(false);
-		submit(e.currentTarget);
-	};
-
-	const textAreaRef = useRef<HTMLTextAreaElement>(null);
-	if (!isEditing) {
-		return (
-			<div className="relative" key={note?.id}>
-				<p className="mb-4">Last updated {note ? new Date(note.createdAt).toLocaleString() : Date()}</p>
-				<h1 className="mb-12 text-5xl font-bold">{note?.title || ''}</h1>
-				<button
-					type="button"
-					onClick={() => setIsEditting(true)}
-					className="absolute right-0 top-0 rounded-3xl bg-blue-500 px-6 py-2 text-xl font-bold uppercase tracking-wide text-white"
-				>
-					Edit
-				</button>
-				<div id="note-content">
-					<ReactMarkdown>{note?.content || ''}</ReactMarkdown>
-				</div>
-			</div>
-		);
-	}
-
-	// Edit mode
 	return (
-		<div className="grid h-full grid-cols-2 gap-24" key={note?.id}>
-			<form id="markdown-form" className="flex flex-col gap-3" method="post" onSubmit={handleSaveNote}>
-				<div>
-					<label htmlFor="markdown-title" className="sr-only">
-						Title:
-					</label>
-					<input
-						type="text"
-						id="markdown-title"
-						name="title"
-						className="border-2 px-2 py-1"
-						value={title}
-						onChange={(e) => setTitle(e.target.value)}
-					/>
-				</div>
-				<textarea
-					id="markdown-content"
-					name="content"
-					className="h-full w-full rounded-sm border-2 px-2 py-1 font-mono"
-					value={content}
-					onChange={(e) => setContent(e.target.value)}
-					ref={textAreaRef}
-				></textarea>
-			</form>
-			<div className="relative">
-				<p className="mb-4">Last updated {note ? new Date(note.createdAt).toLocaleString() : Date()}</p>
-				<h1 className="mb-12 text-5xl font-bold">{title}</h1>
-				<div id="note-content">
-					<div id="note-editmode-buttons" className="absolute top-0 right-0 flex flex-row gap-3">
-						<button
-							className="rounded-3xl border-2 border-blue-500 px-6 py-2 text-blue-500"
-							onClick={() => setIsEditting(false)}
-						>
-							Cancel
-						</button>
-						<button className="rounded-3xl bg-blue-500 px-6 py-2 text-white" type="submit" form="markdown-form">
-							&#10003; Done
-						</button>
-					</div>
-					<ReactMarkdown>{content}</ReactMarkdown>
-				</div>
-			</div>
-		</div>
+		<NoteEditor
+			note={note}
+			isEditMode={isEditing}
+			submitNoteFn={submit}
+			setEditMode={setIsEditting}
+			key={note?.id || 'undefined'}
+		/>
 	);
 };
 
