@@ -61,7 +61,7 @@ const Note: React.FC<NoteProps> = () => {
 	if (!isEditing) {
 		return (
 			<div className="relative" key={note?.id}>
-				<p className="mb-4">Last updated {note ? new Date(note.createdAt).toDateString() : Date()}</p>
+				<p className="mb-4">Last updated {note ? new Date(note.createdAt).toLocaleString() : Date()}</p>
 				<h1 className="mb-12 text-5xl font-bold">{note?.title || ''}</h1>
 				<button
 					type="button"
@@ -104,7 +104,7 @@ const Note: React.FC<NoteProps> = () => {
 				></textarea>
 			</form>
 			<div className="relative">
-				<p className="mb-4">Last updated {note ? new Date(note.createdAt).toDateString() : Date()}</p>
+				<p className="mb-4">Last updated {note ? new Date(note.createdAt).toLocaleString() : Date()}</p>
 				<h1 className="mb-12 text-5xl font-bold">{title}</h1>
 				<div id="note-content">
 					<button

@@ -43,7 +43,7 @@ export default function Index() {
 								<Link to={note.id}>
 									<div className="rounded-md bg-gray-200 p-4">
 										<p className="text-lg font-bold">{note.title}</p>
-										<p>{note.updatedAt}</p>
+										<p>{new Date(note.createdAt).toLocaleString()}</p>
 									</div>
 								</Link>
 							</li>
