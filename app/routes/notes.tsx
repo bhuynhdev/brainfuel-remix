@@ -3,6 +3,7 @@ import { Outlet } from '@remix-run/react';
 import { useLoaderData, Link } from '@remix-run/react';
 import styles from '~/styles/notes.css';
 import { db } from '~/utils/db.server';
+import { requireUserId } from '~/utils/session.server';
 
 export const links: LinksFunction = () => {
 	return [{ rel: 'stylesheet', href: styles }];
@@ -15,8 +16,12 @@ export const loader = async () => {
 	return json(data);
 };
 
-export const action = async () => {
-	const createdNote = await db.note.create({ data: { title: 'Untitled', content: '' }, select: { id: true } });
+export const action = async ({ request }: ActionArgs) => {
+	const userId = await requireUserId(request);
+	const createdNote = await db.note.create({
+		data: { title: 'Untitled', content: '', userId: userId },
+		select: { id: true },
+	});
 	return redirect(`notes/${createdNote.id}?edit=true`);
 };
 
