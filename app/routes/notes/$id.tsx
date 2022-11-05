@@ -37,16 +37,16 @@ interface NoteProps {
 
 const Note: React.FC<NoteProps> = () => {
 	const { note, editMode } = useLoaderData<typeof loader>();
-	const [title, setTitle] = useState('');
-	const [content, setContent] = useState('');
+	const [title, setTitle] = useState(note?.title || '');
+	const [content, setContent] = useState(note?.content || '');
 	const [isEditing, setIsEditting] = useState(editMode);
 	const submit = useSubmit();
 
-	useEffect(() => {
-		// reset initial states when route changes
-		setTitle(note?.title || '');
-		setContent(note?.content || '');
-	}, [note?.title, note?.content]);
+	// useEffect(() => {
+	// 	// reset initial states when route changes
+	// 	setTitle(note?.title || '');
+	// 	setContent(note?.content || '');
+	// }, [note?.title, note?.content]);
 
 	useEffect(() => {
 		textAreaRef.current?.focus();
@@ -107,13 +107,17 @@ const Note: React.FC<NoteProps> = () => {
 				<p className="mb-4">Last updated {note ? new Date(note.createdAt).toLocaleString() : Date()}</p>
 				<h1 className="mb-12 text-5xl font-bold">{title}</h1>
 				<div id="note-content">
-					<button
-						type="submit"
-						form="markdown-form"
-						className="absolute top-0 right-0 rounded-3xl bg-blue-500 px-6 py-2 text-white"
-					>
-						&#10003; Done
-					</button>
+					<div id="note-editmode-buttons" className="absolute top-0 right-0 flex flex-row gap-3">
+						<button
+							className="rounded-3xl border-2 border-blue-500 px-6 py-2 text-blue-500"
+							onClick={() => setIsEditting(false)}
+						>
+							Cancel
+						</button>
+						<button className="rounded-3xl bg-blue-500 px-6 py-2 text-white" type="submit" form="markdown-form">
+							&#10003; Done
+						</button>
+					</div>
 					<ReactMarkdown>{content}</ReactMarkdown>
 				</div>
 			</div>
