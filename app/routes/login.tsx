@@ -1,8 +1,8 @@
-import type { ActionFunction, LinksFunction } from '@remix-run/node';
+import type { ActionArgs } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { useActionData, useSearchParams } from '@remix-run/react';
-import { login, createUserSession } from '~/utils/session.server';
 import { db } from '~/utils/db.server';
+import { createUserSession, login, register } from '~/utils/session.server';
 
 // export const links: LinksFunction = () => {
 // 	return [{ rel: 'stylesheet', href: stylesUrl }];
@@ -21,7 +21,6 @@ function validatePassword(password: unknown) {
 }
 
 function validateUrl(url: any) {
-	console.log(url);
 	let urls = ['/notes', '/', 'https://remix.run'];
 	if (urls.includes(url)) {
 		return url;
@@ -42,9 +41,9 @@ type ActionData = {
 	};
 };
 
-const badRequest = (data: ActionData) => json(data, { status: 400 });
+const badRequest = (data: ActionData) => json<ActionData>(data, { status: 400 });
 
-export const action: ActionFunction = async ({ request }) => {
+export const action = async ({ request }: ActionArgs) => {
 	const form = await request.formData();
 	const loginType = form.get('loginType');
 	const username = form.get('username');
@@ -56,9 +55,7 @@ export const action: ActionFunction = async ({ request }) => {
 		typeof password !== 'string' ||
 		typeof redirectTo !== 'string'
 	) {
-		return badRequest({
-			formError: `Form not submitted correctly.`,
-		});
+		return badRequest({ formError: `Form not submitted correctly.` });
 	}
 
 	const fields = { loginType, username, password };
@@ -66,17 +63,15 @@ export const action: ActionFunction = async ({ request }) => {
 		username: validateUsername(username),
 		password: validatePassword(password),
 	};
-	if (Object.values(fieldErrors).some(Boolean)) return badRequest({ fieldErrors, fields });
+	if (Object.values(fieldErrors).some(Boolean)) {
+		return badRequest({ fieldErrors, fields });
+	}
 
 	switch (loginType) {
 		case 'login': {
 			const user = await login({ username, password });
-			console.log({ user });
 			if (!user) {
-				return badRequest({
-					fields,
-					formError: `Username/Password combination is incorrect`,
-				});
+				return badRequest({ fields, formError: `Username/Password combination is incorrect` });
 			}
 			// if there is a user, create their session and then redirect
 			return createUserSession(user.id, redirectTo);
@@ -86,29 +81,20 @@ export const action: ActionFunction = async ({ request }) => {
 				where: { username },
 			});
 			if (userExists) {
-				return badRequest({
-					fields,
-					formError: `User with username ${username} already exists`,
-				});
+				return badRequest({ fields, formError: `User with username ${username} already exists` });
 			}
-			// create the user
-			// create their session and redirect to /notes
-			return badRequest({
-				fields,
-				formError: 'Not implemented',
-			});
+			// create the user and their session and then redirect
+			const newUser = await register({ username, password });
+			return createUserSession(newUser.id, redirectTo);
 		}
 		default: {
-			return badRequest({
-				fields,
-				formError: `Login type invalid`,
-			});
+			return badRequest({ fields, formError: `Login type invalid` });
 		}
 	}
 };
 
 export default function Login() {
-	const actionData = useActionData<ActionData>();
+	const actionData = useActionData<typeof action>();
 	const [searchParams] = useSearchParams();
 	return (
 		<div className="container">

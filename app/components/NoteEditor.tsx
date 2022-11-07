@@ -47,7 +47,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ note, isEditMode, submit
 	return (
 		<div className="relative grid h-full grid-cols-[45%,minmax(0,55%)] gap-10" key={note?.id}>
 			<div>
-				<NoteHeader title={note?.title} createdAt={note?.createdAt} />
+				<NoteHeader title={title} createdAt={note?.createdAt} />
 				<div className="rendered-md">
 					<ReactMarkdown>{content}</ReactMarkdown>
 				</div>

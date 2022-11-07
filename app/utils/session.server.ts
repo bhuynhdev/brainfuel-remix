@@ -14,7 +14,7 @@ if (!sessionSecret) {
 
 const storage = createCookieSessionStorage({
 	cookie: {
-		name: 'RJ_session',
+		name: 'ETN_session',
 		// normally you want this to be `secure: true`
 		// but that doesn't work on localhost for Safari
 		// https://web.dev/when-to-use-local-https/
@@ -22,7 +22,7 @@ const storage = createCookieSessionStorage({
 		secrets: [sessionSecret],
 		sameSite: 'lax',
 		path: '/',
-		maxAge: 60 * 60 * 24 * 30,
+		maxAge: 60 * 60 * 24 * 30, // 30 days
 		httpOnly: true,
 	},
 });
@@ -52,10 +52,22 @@ export async function requireUserId(request: Request, redirectTo: string = new U
 	const session = await getUserSession(request);
 	const userId = session.get('userId');
 	if (!userId || typeof userId !== 'string') {
+		// Add "redirectTo" to login page to know where to redirect after login in
 		const searchParams = new URLSearchParams([['redirectTo', redirectTo]]);
 		throw redirect(`/login?${searchParams}`);
 	}
 	return userId;
+}
+
+export async function requireUser(request: Request, redirectTo: string = new URL(request.url).pathname) {
+	const userId = await requireUserId(request, redirectTo);
+	const user = await db.user.findUnique({ where: { id: userId } });
+	if (!user) {
+		// Add "redirectTo" to login page to know where to redirect after login in
+		const searchParams = new URLSearchParams([['redirectTo', redirectTo]]);
+		throw redirect(`/login?${searchParams}`);
+	}
+	return user;
 }
 
 export async function login({ username, password }: LoginForm) {
@@ -68,4 +80,10 @@ export async function login({ username, password }: LoginForm) {
 	if (!isCorrectPassword) return null;
 
 	return { id: user.id, username };
+}
+
+export async function register({ username, password }: LoginForm) {
+	const passwordHash = await bcrypt.hash(password, 10);
+	const newUser = await db.user.create({ data: { username, passwordHash } });
+	return { id: newUser.id, username };
 }
