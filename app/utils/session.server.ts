@@ -48,20 +48,25 @@ export async function getUserId(request: Request) {
 	return userId;
 }
 
-export async function requireUserId(request: Request, redirectTo: string = new URL(request.url).pathname) {
-	const session = await getUserSession(request);
-	const userId = session.get('userId');
-	if (!userId || typeof userId !== 'string') {
-		// Add "redirectTo" to login page to know where to redirect after login in
-		const searchParams = new URLSearchParams([['redirectTo', redirectTo]]);
-		throw redirect(`/login?${searchParams}`);
+export async function getUser(request: Request) {
+	const userId = await getUserId(request);
+	if (typeof userId !== 'string') {
+		return null;
 	}
-	return userId;
+
+	try {
+		const user = await db.user.findUnique({
+			where: { id: userId },
+			select: { id: true, username: true },
+		});
+		return user;
+	} catch {
+		throw logout(request);
+	}
 }
 
 export async function requireUser(request: Request, redirectTo: string = new URL(request.url).pathname) {
-	const userId = await requireUserId(request, redirectTo);
-	const user = await db.user.findUnique({ where: { id: userId } });
+	const user = await getUser(request);
 	if (!user) {
 		// Add "redirectTo" to login page to know where to redirect after login in
 		const searchParams = new URLSearchParams([['redirectTo', redirectTo]]);
@@ -80,6 +85,15 @@ export async function login({ username, password }: LoginForm) {
 	if (!isCorrectPassword) return null;
 
 	return { id: user.id, username };
+}
+
+export async function logout(request: Request) {
+	const session = await getUserSession(request);
+	return redirect('/login', {
+		headers: {
+			'Set-Cookie': await storage.destroySession(session),
+		},
+	});
 }
 
 export async function register({ username, password }: LoginForm) {

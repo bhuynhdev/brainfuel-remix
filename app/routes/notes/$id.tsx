@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { NoteEditor } from '~/components/NoteEditor';
 import markdownStyles from '~/styles/markdown.css';
 import { db } from '~/utils/db.server';
-import { getUserId, requireUserId } from '~/utils/session.server';
+import { getUserId, requireUser } from '~/utils/session.server';
 
 export const links: LinksFunction = () => {
 	return [{ rel: 'stylesheet', href: markdownStyles }];
@@ -23,7 +23,7 @@ export const loader = async ({ params, request }: LoaderArgs) => {
 };
 
 export const action = async ({ request, params }: ActionArgs) => {
-	const userId = await requireUserId(request);
+	const user = await requireUser(request);
 	const form = await request.formData();
 	const noteId = params.id;
 	const _action = form.get('_action');
@@ -36,7 +36,7 @@ export const action = async ({ request, params }: ActionArgs) => {
 				throw new Error(`Form not submitted correctly.`);
 			}
 			await db.note.updateMany({
-				where: { id: noteId, userId: userId },
+				where: { id: noteId, userId: user.id },
 				data: {
 					title: title,
 					content: content,

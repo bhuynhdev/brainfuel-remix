@@ -2,24 +2,25 @@ import { ActionArgs, json, LinksFunction, LoaderArgs, redirect } from '@remix-ru
 import { Link, Outlet, RouteMatch, useFetcher, useLoaderData, useMatches } from '@remix-run/react';
 import styles from '~/styles/notes.css';
 import { db } from '~/utils/db.server';
-import { getUserId, requireUserId } from '~/utils/session.server';
+import { getUser, requireUser } from '~/utils/session.server';
 
 export const links: LinksFunction = () => {
 	return [{ rel: 'stylesheet', href: styles }];
 };
 
 export const loader = async ({ request }: LoaderArgs) => {
-	const userId = await getUserId(request);
-	if (!userId) {
+	// Can't use "requireUser" here because "/notes/$id" route may be public
+	const user = await getUser(request);
+	if (!user) {
 		return json({ notes: [] });
 	}
-	return json({ notes: await db.note.findMany({ where: { userId: userId } }) });
+	return json({ notes: await db.note.findMany({ where: { userId: user.id } }) });
 };
 
 export const action = async ({ request }: ActionArgs) => {
-	const userId = await requireUserId(request);
+	const user = await requireUser(request);
 	const createdNote = await db.note.create({
-		data: { title: 'Untitled', content: '', userId: userId },
+		data: { title: 'Untitled', content: '', userId: user.id },
 		select: { id: true },
 	});
 	return redirect(`notes/${createdNote.id}?edit=true`);
