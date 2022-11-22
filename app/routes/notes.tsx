@@ -1,6 +1,5 @@
-import { LinksFunction, json, ActionArgs, redirect, LoaderArgs } from '@remix-run/node';
-import { Outlet, RouteMatch } from '@remix-run/react';
-import { useLoaderData, Link, useMatches } from '@remix-run/react';
+import { ActionArgs, json, LinksFunction, LoaderArgs, redirect } from '@remix-run/node';
+import { Link, Outlet, RouteMatch, useFetcher, useLoaderData, useMatches } from '@remix-run/react';
 import styles from '~/styles/notes.css';
 import { db } from '~/utils/db.server';
 import { getUserId, requireUserId } from '~/utils/session.server';
@@ -27,21 +26,26 @@ export const action = async ({ request }: ActionArgs) => {
 };
 
 /**
- * Get the loader data from "$id" route to determine if sidebar should show
+ * Get the loader data from "$id" route
  * @param matches The matches array from useMatches
- * @returns Boolean to determine if sidebar should show
+ * @returns Object containing the id of the active note and its data (if any)
  */
-function determineSideBarShouldShow(matches: RouteMatch[]) {
+function extractActiveRouteData(matches: RouteMatch[]) {
 	// Filter to only get match info from the relevant "$id" route
 	const filteredMatches = matches.filter((match) => match.id.includes('$id'));
-	// Should also show sidebar in case "$id" route is not matched, i.e in the root "/notes" route
-	const sideBarShouldShow: boolean = filteredMatches.length === 0 || filteredMatches[0].data.showSidebar;
-	return sideBarShouldShow;
+	const currentNote = filteredMatches.length === 0 ? null : filteredMatches[0].params.id;
+	if (currentNote) {
+		return { currentNote, noteData: filteredMatches[0].data };
+	}
+	return { currentNote: null, noteData: {} };
 }
 
 export default function Notes() {
+	const fetcher = useFetcher();
 	const matches = useMatches();
-	const sideBarShouldShow = determineSideBarShouldShow(matches);
+	const { currentNote, noteData } = extractActiveRouteData(matches);
+	// Should also show sidebar in case "$id" route is not matched - no activeNote, i.e in the root "/notes" route
+	const sideBarShouldShow = !currentNote || noteData.showSidebar;
 	const { notes } = useLoaderData<typeof loader>();
 	return (
 		<>
@@ -54,20 +58,31 @@ export default function Notes() {
 						<div className="mb-4 flex flex-row items-center justify-between">
 							<h1 className="text-2xl font-bold">Your Notes</h1>
 							<form method="POST" action="/notes">
-								<button className="rounded-3xl bg-blue-500 px-4 py-2 font-bold uppercase tracking-wider text-white">
+								<button
+									type="submit"
+									className="rounded-3xl bg-blue-500 px-4 py-2 font-bold uppercase tracking-wider text-white"
+								>
 									New
 								</button>
 							</form>
 						</div>
 						<ul className="flex flex-col gap-4 overflow-y-auto">
 							{notes.map((note) => (
-								<li key={note.id}>
+								<li key={note.id} className="relative">
 									<Link to={note.id}>
 										<div className="rounded-md bg-gray-200 p-4">
 											<p className="text-lg font-bold">{note.title}</p>
 											<p>{new Date(note.createdAt).toLocaleString()}</p>
 										</div>
 									</Link>
+									<fetcher.Form method="post" action={`/notes/${note.id}`} className="absolute top-4 right-3">
+										<button type="submit" className="rounded-2xl bg-red-600 px-2 py-1 text-xs text-white">
+											Delete
+										</button>
+										<input type="hidden" name="_action" value="delete" />
+										{/* Needs to redirect back to "/notes" if current active note is also note to delete */}
+										<input type="hidden" name="redirectTo" value={`${currentNote === note.id ? '/notes' : ''}`} />
+									</fetcher.Form>
 								</li>
 							))}
 						</ul>

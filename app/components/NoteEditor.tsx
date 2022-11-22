@@ -75,6 +75,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ note, isEditMode, submit
 					onChange={(e) => setContent(e.target.value)}
 					ref={textAreaRef}
 				></textarea>
+				<input type="hidden" name="_action" value="update" />
 			</form>
 
 			<div id="note-editmode-buttons" className="absolute -top-5 right-0 flex flex-row gap-3">
