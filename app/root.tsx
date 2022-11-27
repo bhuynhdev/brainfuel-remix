@@ -42,15 +42,31 @@ export default function App() {
 }
 
 function Header({ user }: { user: null | Awaited<ReturnType<typeof getUser>> }) {
-	const LogOutButton = user ? (
-		<li>
-			<form action="/logout" method="post">
-				<button type="submit" className="button">
-					Logout
-				</button>
-			</form>
-		</li>
-	) : null;
+	const navItemsWhenLoggedOut = (
+		<>
+			<li>
+				<Link to="login">Login</Link>
+			</li>
+			<li>
+				<Link to="register">Register</Link>
+			</li>
+		</>
+	);
+
+	const navItemsWhenLoggedIn = (
+		<>
+			<li>
+				<Link to="notes">Notes</Link>
+			</li>
+			<li>
+				<form action="/logout" method="post">
+					<button type="submit" className="button">
+						Logout
+					</button>
+				</form>
+			</li>
+		</>
+	);
 
 	return (
 		<header className="flex flex-row items-center justify-between py-4">
@@ -58,10 +74,10 @@ function Header({ user }: { user: null | Awaited<ReturnType<typeof getUser>> }) 
 			<nav>
 				<ul className="flex flex-row gap-12">
 					<li>
-						<Link to="#">Home</Link>
+						<Link to="/">Home</Link>
 					</li>
-					<li>{user ? <Link to="notes">Notes</Link> : <Link to="login">Login</Link>}</li>
-					{LogOutButton}
+					{user && navItemsWhenLoggedIn}
+					{!user && navItemsWhenLoggedOut}
 				</ul>
 			</nav>
 		</header>
