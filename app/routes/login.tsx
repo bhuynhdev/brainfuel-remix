@@ -125,7 +125,7 @@ export default function Login() {
 	return (
 		<div className="mt-20 flex h-full flex-col items-center">
 			<h1>Login</h1>
-			<form method="post" className="flex w-96 flex-col gap-3">
+			<form method="post" className="flex w-4/5 max-w-sm flex-col gap-3">
 				<input type="hidden" name="redirectTo" value={searchParams.get('redirectTo') ?? undefined} />
 				<fieldset>
 					<legend className="sr-only">Login or Register?</legend>

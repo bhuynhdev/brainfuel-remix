@@ -586,8 +586,12 @@ video {
   width: 100%;
 }
 
-.w-96 {
-  width: 24rem;
+.w-4\/5 {
+  width: 80%;
+}
+
+.max-w-sm {
+  max-width: 24rem;
 }
 
 .grid-cols-\[45\%\2c minmax\(0\2c 55\%\)\] {

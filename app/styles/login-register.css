@@ -9,3 +9,10 @@
   background: #f5f5f5;
   border-radius: 5px;
 }
+
+.form-validation-error {
+  padding: 0.5em 1em;
+  font-size: 0.85em;
+  background: hsl(0, 100%, 78%);
+  border-radius: 5px;
+}
