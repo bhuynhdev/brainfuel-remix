@@ -1,7 +1,9 @@
 import { ActionArgs, json, LinksFunction } from '@remix-run/node';
 import { useFetcher, useSearchParams } from '@remix-run/react';
+import { useState, useEffect } from 'react';
 import { z } from 'zod';
 import styles from '~/styles/login-register.css';
+import { useDebounce } from '~/utils/hooks';
 
 export const links: LinksFunction = () => {
 	return [{ href: styles, rel: 'stylesheet' }];
@@ -89,29 +91,58 @@ Y88b  d88P Y88..88P 888  888  888 888 d88P Y88..88P 888  888 Y8b.     888  888 Y
 */
 
 export default function Register(): JSX.Element {
+	let [username, setUsername] = useState('');
 	const [searchParams] = useSearchParams();
-	const fetcher = useFetcher<ActionData>();
+	const registerFetcher = useFetcher<ActionData>();
+	const usernameCheckFetcher = useFetcher();
+	const [debouncedUsername] = useDebounce(username, 700);
+
+	useEffect(() => {
+		let searchParams = new URLSearchParams(location.search);
+		if (debouncedUsername !== '') {
+			searchParams.set('q', debouncedUsername);
+		} else {
+			searchParams.delete('q');
+		}
+		// Check if username is available every time debounced username changes
+		usernameCheckFetcher.submit(searchParams, { action: 'register/username', method: 'get' });
+	}, [debouncedUsername]);
+
 	return (
 		<div className="mt-20 flex h-full flex-col items-center">
 			<h1>Register</h1>
-			<fetcher.Form method="post" className="flex w-4/5 max-w-sm flex-col gap-3">
+			<pre>{JSON.stringify(usernameCheckFetcher.data, null, 2)}</pre>
+			<registerFetcher.Form method="post" className="flex w-4/5 max-w-sm flex-col gap-3">
 				<input type="hidden" name="redirectTo" value={searchParams.get('redirectTo') ?? undefined} />
 				<div className="form-field">
 					<label htmlFor="register-username">Username</label>
-					<input type="text" id="register-username" name="username" required />
+					<input
+						type="text"
+						id="register-username"
+						name="username"
+						required
+						value={username}
+						onChange={(e) => {
+							setUsername(e.target.value);
+						}}
+					/>
 				</div>
-				{fetcher.data?.fieldErrors?.username ? (
+				{registerFetcher.data?.fieldErrors?.username ? (
 					<p className="form-validation-error" role="alert" id="username-error">
-						{fetcher.data.fieldErrors.username}
+						{registerFetcher.data.fieldErrors.username}
+					</p>
+				) : usernameCheckFetcher.data?.isUsernameUnavailable ? (
+					<p className="form-validation-error" role="alert" id="password-error">
+						Username is already used. Please choose a new username
 					</p>
 				) : null}
 				<div className="form-field">
 					<label htmlFor="register-username">Password</label>
 					<input type="password" id="register-password" name="password" required autoComplete="new-password" />
 				</div>
-				{fetcher.data?.fieldErrors?.password ? (
+				{registerFetcher.data?.fieldErrors?.password ? (
 					<p className="form-validation-error" role="alert" id="password-error">
-						{fetcher.data?.fieldErrors?.password}
+						{registerFetcher.data?.fieldErrors?.password}
 					</p>
 				) : null}
 				<div className="form-field">
@@ -124,15 +155,15 @@ export default function Register(): JSX.Element {
 						autoComplete="new-password"
 					/>
 				</div>
-				{fetcher.data?.fieldErrors?.passwordConfirm ? (
+				{registerFetcher.data?.fieldErrors?.passwordConfirm ? (
 					<p className="form-validation-error" role="alert" id="password-error">
-						{fetcher.data?.fieldErrors?.passwordConfirm}
+						{registerFetcher.data?.fieldErrors?.passwordConfirm}
 					</p>
 				) : null}
 				<button type="submit" className="rounded-lg bg-blue-400 px-4 py-2">
 					Register
 				</button>
-			</fetcher.Form>
+			</registerFetcher.Form>
 		</div>
 	);
 }
