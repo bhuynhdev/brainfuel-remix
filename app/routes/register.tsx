@@ -1,12 +1,26 @@
 import { ActionArgs, json, LinksFunction } from '@remix-run/node';
-import { useFetcher, useSearchParams } from '@remix-run/react';
-import { useState, useEffect } from 'react';
+import { Form, useActionData, useFetcher, useSearchParams } from '@remix-run/react';
+import { useEffect, useState } from 'react';
 import { z } from 'zod';
 import styles from '~/styles/login-register.css';
+import { db } from '~/utils/db.server';
 import { useDebounce } from '~/utils/hooks';
 
 export const links: LinksFunction = () => {
 	return [{ href: styles, rel: 'stylesheet' }];
+};
+
+/**
+ * 	Check that app links, i.e redirect url, does not lead to unauthorized path
+ * @param url
+ * @returns The url if valid, else change to "/notes"
+ */
+const validateAppUrl = (url: string) => {
+	let urls = ['/notes', '/'];
+	if (urls.includes(url)) {
+		return url;
+	}
+	return '/notes';
 };
 
 type ActionData = {
@@ -23,7 +37,20 @@ type ActionData = {
 	};
 };
 
-const RegisterValidator = z
+/*
+
+888     888         888 d8b      888          888                             
+888     888         888 Y8P      888          888                             
+888     888         888          888          888                             
+Y88b   d88P 8888b.  888 888  .d88888  8888b.  888888 .d88b.  888d888 .d8888b  
+ Y88b d88P     "88b 888 888 d88" 888     "88b 888   d88""88b 888P"   88K      
+  Y88o88P  .d888888 888 888 888  888 .d888888 888   888  888 888     "Y8888b. 
+   Y888P   888  888 888 888 Y88b 888 888  888 Y88b. Y88..88P 888          X88 
+    Y8P    "Y888888 888 888  "Y88888 "Y888888  "Y888 "Y88P"  888      88888P' 
+                                                                              
+*/
+
+const ClientRegisterValidator = z
 	.object({
 		username: z.string().min(3, { message: 'Username must be 3 characters or longer' }),
 		password: z.string().min(10, { message: 'Password must be 10 characters or longer' }),
@@ -33,6 +60,18 @@ const RegisterValidator = z
 		path: ['passwordConfirm'],
 		message: 'Passwords must match',
 	});
+
+// Add extra check that username has not existed yet when server validate
+const ServerRegisterValidator = ClientRegisterValidator.refine(
+	async (data) => {
+		const existedUser = await db.user.findFirst({ where: { username: data.username } });
+		return !existedUser;
+	},
+	{
+		path: ['username'],
+		message: 'Username already existed',
+	}
+);
 
 /*
        d8888          888    d8b                   
@@ -51,8 +90,8 @@ export const action = async ({ request }: ActionArgs) => {
 	const form = await request.formData();
 	const username = form.get('username');
 	const password = form.get('password');
-	const passwordConfirm = form.get('password-confirm');
-	const redirectTo = form.get('redirectTo');
+	const passwordConfirm = form.get('passwordConfirm');
+	let redirectTo = form.get('redirectTo');
 	if (
 		typeof username !== 'string' ||
 		typeof password !== 'string' ||
@@ -61,8 +100,13 @@ export const action = async ({ request }: ActionArgs) => {
 	) {
 		return badRequest({ formError: 'Form not submitted correctly.' });
 	}
+	// Validate redirectUrl
+	redirectTo = validateAppUrl(redirectTo);
+
+	// Validate other fields with Zod
 	const fields = { username, password, passwordConfirm };
-	const validationResult = RegisterValidator.safeParse(fields);
+	const validationResult = await ServerRegisterValidator.safeParseAsync(fields);
+
 	if (!validationResult.success) {
 		const validationErrors = validationResult.error.format();
 		const fieldErrors = {
@@ -91,28 +135,50 @@ Y88b  d88P Y88..88P 888  888  888 888 d88P Y88..88P 888  888 Y8b.     888  888 Y
 */
 
 export default function Register(): JSX.Element {
-	let [username, setUsername] = useState('');
+	const [username, setUsername] = useState('');
+	const actionData = useActionData<ActionData>();
+	const [registerErrors, setRegisterErrors] = useState(actionData?.fieldErrors);
 	const [searchParams] = useSearchParams();
-	const registerFetcher = useFetcher<ActionData>();
 	const usernameCheckFetcher = useFetcher();
 	const [debouncedUsername] = useDebounce(username, 700);
 
 	useEffect(() => {
-		let searchParams = new URLSearchParams(location.search);
+		// Synchronize with actionData from server
+		setRegisterErrors(actionData?.fieldErrors);
+	}, [actionData]);
+
+	useEffect(() => {
+		let usernameSearchParams = new URLSearchParams(location.search);
 		if (debouncedUsername !== '') {
-			searchParams.set('q', debouncedUsername);
+			usernameSearchParams.set('q', debouncedUsername);
 		} else {
-			searchParams.delete('q');
+			usernameSearchParams.delete('q');
 		}
 		// Check if username is available every time debounced username changes
-		usernameCheckFetcher.submit(searchParams, { action: 'register/username', method: 'get' });
+		usernameCheckFetcher.submit(usernameSearchParams, { action: 'register/username', method: 'get' });
 	}, [debouncedUsername]);
+
+	const formOnChange: React.FormEventHandler<HTMLFormElement> = (e) => {
+		// Validate form and produce error on change
+		const formValues = Object.fromEntries(new FormData(e.currentTarget));
+		// Validate using Zod
+		const validationResult = ClientRegisterValidator.safeParse(formValues);
+		if (!validationResult.success) {
+			const validationErrors = validationResult.error.format();
+			const fieldErrors = {
+				// Only show error if that field is not empty
+				username: formValues.username && validationErrors.username?._errors[0],
+				password: formValues.password && validationErrors.password?._errors[0],
+				passwordConfirm: formValues.passwordConfirm && validationErrors.passwordConfirm?._errors[0],
+			};
+			return setRegisterErrors(fieldErrors);
+		}
+	};
 
 	return (
 		<div className="mt-20 flex h-full flex-col items-center">
 			<h1>Register</h1>
-			<pre>{JSON.stringify(usernameCheckFetcher.data, null, 2)}</pre>
-			<registerFetcher.Form method="post" className="flex w-4/5 max-w-sm flex-col gap-3">
+			<Form className="flex w-4/5 max-w-sm flex-col gap-3" method="post" onChange={formOnChange}>
 				<input type="hidden" name="redirectTo" value={searchParams.get('redirectTo') ?? undefined} />
 				<div className="form-field">
 					<label htmlFor="register-username">Username</label>
@@ -127,9 +193,9 @@ export default function Register(): JSX.Element {
 						}}
 					/>
 				</div>
-				{registerFetcher.data?.fieldErrors?.username ? (
+				{registerErrors?.username ? (
 					<p className="form-validation-error" role="alert" id="username-error">
-						{registerFetcher.data.fieldErrors.username}
+						{registerErrors.username}
 					</p>
 				) : usernameCheckFetcher.data?.isUsernameUnavailable ? (
 					<p className="form-validation-error" role="alert" id="password-error">
@@ -140,9 +206,9 @@ export default function Register(): JSX.Element {
 					<label htmlFor="register-username">Password</label>
 					<input type="password" id="register-password" name="password" required autoComplete="new-password" />
 				</div>
-				{registerFetcher.data?.fieldErrors?.password ? (
+				{registerErrors?.password ? (
 					<p className="form-validation-error" role="alert" id="password-error">
-						{registerFetcher.data?.fieldErrors?.password}
+						{registerErrors.password}
 					</p>
 				) : null}
 				<div className="form-field">
@@ -150,20 +216,20 @@ export default function Register(): JSX.Element {
 					<input
 						type="password"
 						id="register-password-confirm"
-						name="password-confirm"
+						name="passwordConfirm"
 						required
 						autoComplete="new-password"
 					/>
 				</div>
-				{registerFetcher.data?.fieldErrors?.passwordConfirm ? (
+				{registerErrors?.passwordConfirm ? (
 					<p className="form-validation-error" role="alert" id="password-error">
-						{registerFetcher.data?.fieldErrors?.passwordConfirm}
+						{registerErrors.passwordConfirm}
 					</p>
 				) : null}
 				<button type="submit" className="rounded-lg bg-blue-400 px-4 py-2">
 					Register
 				</button>
-			</registerFetcher.Form>
+			</Form>
 		</div>
 	);
 }
