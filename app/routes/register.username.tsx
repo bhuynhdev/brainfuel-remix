@@ -4,7 +4,6 @@ import { db } from '~/utils/db.server';
 export async function loader({ request }: LoaderArgs) {
 	const url = new URL(request.url);
 	const query = url.searchParams.get('q');
-	console.log('query', query);
 	if (!query) {
 		return json({ isGoodUsername: true });
 	}

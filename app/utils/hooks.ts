@@ -1,8 +1,12 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 // Credit: https://gist.github.com/tomslutsky/f87a253a1dc43a1797306a79243a25ed#file-debounced-search-tsx
-export function useDebounce<T = any>(value: T, delay: number): [T, boolean] {
+export function useDebouncedState<T = any>(
+	initialValue: T,
+	delay: number
+): [T, boolean, T, React.Dispatch<React.SetStateAction<T>>] {
 	// State and setters for debounced value
+	const [value, setValue] = useState(initialValue);
 	const [debouncedValue, setDebouncedValue] = useState(value);
 	let [isDebouncing, setDebouncing] = useState(false);
 	useEffect(
@@ -22,5 +26,5 @@ export function useDebounce<T = any>(value: T, delay: number): [T, boolean] {
 		},
 		[value, delay] // Only re-call effect if value or delay changes
 	);
-	return [debouncedValue, isDebouncing];
+	return [debouncedValue, isDebouncing, value, setValue];
 }
