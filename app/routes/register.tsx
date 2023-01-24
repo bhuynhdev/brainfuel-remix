@@ -2,11 +2,11 @@ import { ActionArgs, json, LinksFunction } from '@remix-run/node';
 import { Form, useActionData, useFetcher, useSearchParams } from '@remix-run/react';
 import { useEffect, useState } from 'react';
 import { z } from 'zod';
+import SmallSpinner from '~/components/SmallSpinner';
 import { db } from '~/utils/db.server';
 import { useDebouncedState } from '~/utils/hooks';
+import { createUserSession, register } from '~/utils/session.server';
 import styles from '~/styles/login-register.css';
-import { register, createUserSession } from '~/utils/session.server';
-import SmallSpinner from '~/components/SmallSpinner';
 
 export const links: LinksFunction = () => {
 	return [{ href: styles, rel: 'stylesheet' }];
@@ -114,7 +114,15 @@ export const action = async ({ request }: ActionArgs) => {
 		};
 		return badRequest({ fieldErrors, fields });
 	}
-	return json<ActionData>({});
+	// If validation passes then create User and redirect
+	const user = await register({ username, password });
+	if (!user) {
+		return badRequest({
+			fields,
+			formError: `Something went wrong trying to create a new user.`,
+		});
+	}
+	return createUserSession(user.id, validateAppUrl(redirectTo));
 };
 
 /*
