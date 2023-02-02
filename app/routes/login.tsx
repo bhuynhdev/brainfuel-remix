@@ -1,33 +1,14 @@
 import type { ActionArgs, LinksFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { useActionData, useSearchParams } from '@remix-run/react';
+import { z } from 'zod';
 import styles from '~/styles/login-register.css';
-import { db } from '~/utils/db.server';
-import { createUserSession, login, register } from '~/utils/session.server';
+import { validateAppUrl } from '~/utils/misc';
+import { createUserSession, login } from '~/utils/session.server';
 
 export const links: LinksFunction = () => {
 	return [{ rel: 'stylesheet', href: styles }];
 };
-
-function validateUsername(username: unknown) {
-	if (typeof username !== 'string' || username.length < 3) {
-		return `Usernames must be at least 3 characters long`;
-	}
-}
-
-function validatePassword(password: unknown) {
-	if (typeof password !== 'string' || password.length < 6) {
-		return `Passwords must be at least 6 characters long`;
-	}
-}
-
-function validateUrl(url: any) {
-	let urls = ['/notes', '/'];
-	if (urls.includes(url)) {
-		return url;
-	}
-	return '/notes';
-}
 
 /*
        d8888          888    d8b                   
@@ -40,69 +21,49 @@ function validateUrl(url: any) {
 d88P     888  "Y8888P  "Y888 888  "Y88P"  888  888 
 */
 
+const LoginValidator = z.object({
+	username: z.string().min(1),
+	password: z.string().min(1),
+});
+
+type LoginForm = z.infer<typeof LoginValidator>;
+
 type ActionData = {
 	formError?: string;
-	fieldErrors?: {
-		username: string | undefined;
-		password: string | undefined;
-	};
 	fields?: {
-		loginType: string;
-		username: string;
-		password: string;
+		[K in keyof LoginForm]?: string;
+	};
+	fieldErrors?: {
+		[K in keyof LoginForm]?: string;
 	};
 };
 
-const badRequest = (data: ActionData) => json<ActionData>(data, { status: 400 });
-
 export const action = async ({ request }: ActionArgs) => {
-	const form = await request.formData();
-	const loginType = form.get('loginType');
-	const username = form.get('username');
-	const password = form.get('password');
-	const redirectTo = validateUrl(form.get('redirectTo') || '/notes');
-	if (
-		typeof loginType !== 'string' ||
-		typeof username !== 'string' ||
-		typeof password !== 'string' ||
-		typeof redirectTo !== 'string'
-	) {
+	const badRequest = (data: ActionData) => json<ActionData>(data, { status: 400 });
+
+	const form = Object.fromEntries(await request.formData());
+	const { username, password, redirectTo } = form;
+	if (typeof username !== 'string' || typeof password !== 'string' || typeof redirectTo !== 'string') {
 		return badRequest({ formError: 'Form not submitted correctly.' });
 	}
 
-	const fields = { loginType, username, password };
-	const fieldErrors = {
-		username: validateUsername(username),
-		password: validatePassword(password),
-	};
-	if (Object.values(fieldErrors).some(Boolean)) {
+	const fields = { username, password };
+	const validationResult = LoginValidator.safeParse(fields);
+	if (!validationResult.success) {
+		const validationErrors = validationResult.error.format();
+		const fieldErrors = {
+			username: validationErrors.username?._errors[0],
+			password: validationErrors.password?._errors[0],
+		};
 		return badRequest({ fieldErrors, fields });
 	}
 
-	switch (loginType) {
-		case 'login': {
-			const user = await login({ username, password });
-			if (!user) {
-				return badRequest({ fields, formError: `Username/Password combination is incorrect` });
-			}
-			// if there is a user, create their session and then redirect
-			return createUserSession(user.id, redirectTo);
-		}
-		case 'register': {
-			const userExists = await db.user.findFirst({
-				where: { username },
-			});
-			if (userExists) {
-				return badRequest({ fields, formError: `User with username ${username} already exists` });
-			}
-			// create the user and their session and then redirect
-			const newUser = await register({ username, password });
-			return createUserSession(newUser.id, redirectTo);
-		}
-		default: {
-			return badRequest({ fields, formError: `Login type invalid` });
-		}
+	const user = await login({ username, password });
+	if (!user) {
+		return badRequest({ fields, formError: 'Invalid username and password' });
 	}
+	// if there is a user, create their session and then redirect
+	return createUserSession(user.id, validateAppUrl(redirectTo));
 };
 
 /*
@@ -127,27 +88,6 @@ export default function Login() {
 			<h1>Login</h1>
 			<form method="post" className="flex w-4/5 max-w-sm flex-col gap-3">
 				<input type="hidden" name="redirectTo" value={searchParams.get('redirectTo') ?? undefined} />
-				<fieldset>
-					<legend className="sr-only">Login or Register?</legend>
-					<label>
-						<input
-							type="radio"
-							name="loginType"
-							value="login"
-							defaultChecked={!actionData?.fields?.loginType || actionData?.fields?.loginType === 'login'}
-						/>
-						Login
-					</label>
-					<label>
-						<input
-							type="radio"
-							name="loginType"
-							value="register"
-							defaultChecked={actionData?.fields?.loginType === 'register'}
-						/>
-						Register
-					</label>
-				</fieldset>
 				<div className="form-field">
 					<label htmlFor="username-input">Username</label>
 					<input

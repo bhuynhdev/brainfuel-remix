@@ -7,22 +7,10 @@ import { db } from '~/utils/db.server';
 import { useDebouncedState } from '~/utils/hooks';
 import { createUserSession, register } from '~/utils/session.server';
 import styles from '~/styles/login-register.css';
+import { validateAppUrl } from '~/utils/misc';
 
 export const links: LinksFunction = () => {
 	return [{ href: styles, rel: 'stylesheet' }];
-};
-
-/**
- * 	Check that app links, i.e redirect url, does not lead to unauthorized path
- * @param url
- * @returns The url if valid, else change to "/notes"
- */
-const validateAppUrl = (url: string) => {
-	let urls = ['/notes', '/'];
-	if (urls.includes(url)) {
-		return url;
-	}
-	return '/notes';
 };
 
 /*
@@ -44,7 +32,7 @@ const ClientRegisterValidator = z
 			.string()
 			.min(3, { message: 'Username must be 3 characters or longer' })
 			.max(24, { message: 'Username must be less than 25 characters' }),
-		password: z.string().min(10, { message: 'Password must be 10 characters or longer' }),
+		password: z.string().min(8, { message: 'Password must be 8 characters or longer' }),
 		passwordConfirm: z.string(),
 	})
 	.refine((data) => data.password === data.passwordConfirm, {
@@ -177,6 +165,7 @@ export default function Register(): JSX.Element {
 			};
 			return setFieldErrors(fieldErrors);
 		}
+		return setFieldErrors({});
 	};
 
 	return (
