@@ -26,7 +26,7 @@ Y88b   d88P 8888b.  888 888  .d88888  8888b.  888888 .d88b.  888d888 .d8888b
                                                                               
 */
 
-const ClientRegisterValidator = z
+const RegisterValidator = z
 	.object({
 		username: z
 			.string()
@@ -40,19 +40,7 @@ const ClientRegisterValidator = z
 		message: 'Passwords must match',
 	});
 
-// Add extra server validation: check that username has not existed yet
-const ServerRegisterValidator = ClientRegisterValidator.refine(
-	async (data) => {
-		const existedUser = await db.user.findFirst({ where: { username: data.username } });
-		return !existedUser;
-	},
-	{
-		path: ['username'],
-		message: 'Username already existed',
-	}
-);
-
-type RegisterForm = z.infer<typeof ServerRegisterValidator>;
+type RegisterForm = z.infer<typeof RegisterValidator>;
 
 type ActionData = {
 	formError?: string;
@@ -75,6 +63,16 @@ type ActionData = {
 d88P     888  "Y8888P  "Y888 888  "Y88P"  888  888 
 */
 
+/**
+ * Check if a username exists yet in the datbase
+ * @param usernameToCheck string
+ * @returns True if username existed, else False
+ */
+const checkIfUsernameExists = async (usernameToCheck: string) => {
+	const existedUser = await db.user.findFirst({ where: { username: usernameToCheck } });
+	return !!existedUser;
+};
+
 export const action = async ({ request }: ActionArgs) => {
 	const badRequest = (data: ActionData) => json<ActionData>(data, { status: 400 });
 
@@ -91,7 +89,7 @@ export const action = async ({ request }: ActionArgs) => {
 
 	// Validate form fields with Zod
 	const fields = { username, password, passwordConfirm };
-	const validationResult = await ServerRegisterValidator.safeParseAsync(fields);
+	const validationResult = await RegisterValidator.safeParse(fields);
 
 	if (!validationResult.success) {
 		const validationErrors = validationResult.error.format();
@@ -102,7 +100,12 @@ export const action = async ({ request }: ActionArgs) => {
 		};
 		return badRequest({ fieldErrors, fields });
 	}
-	// If validation passes then create User and redirect
+	// If validation passes then first check if crendentials exist yet
+	const isUsernameExist = await checkIfUsernameExists(username);
+	if (isUsernameExist) {
+		return badRequest({ fieldErrors: { username: 'Username already exists' }, fields });
+	}
+	// Create User and redirect
 	const user = await register({ username, password });
 	if (!user) {
 		return badRequest({
@@ -154,7 +157,7 @@ export default function Register(): JSX.Element {
 		// Validate form and produce error on change
 		const formValues = Object.fromEntries(new FormData(e.currentTarget));
 		// Validate using Zod
-		const validationResult = ClientRegisterValidator.safeParse(formValues);
+		const validationResult = RegisterValidator.safeParse(formValues);
 		if (!validationResult.success) {
 			const validationErrors = validationResult.error.format();
 			const fieldErrors = {
