@@ -1,10 +1,7 @@
 import { SubmitFunction } from '@remix-run/react';
 import { FormEvent, useEffect, useRef, useState } from 'react';
-import ReactMarkdown from 'react-markdown';
-import rehypeHighlight from 'rehype-highlight';
-import remarkDirective from 'remark-directive';
-import remarkDirectiveRehype from 'remark-directive-rehype';
 import { LoadedNote } from '~/routes/notes/$id';
+import MarkdownRenderer from './MarkdownRenderer';
 
 interface NoteEditorProps {
 	note: LoadedNote;
@@ -56,13 +53,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ note, isEditMode, submit
 					Edit
 				</button>
 				<div className="markdown-body">
-					<ReactMarkdown
-						remarkPlugins={[remarkDirective, remarkDirectiveRehype]}
-						remarkRehypeOptions={{ passThrough: ['quiz'] }}
-						rehypePlugins={[[rehypeHighlight, { ignoreMissing: true }]]}
-					>
-						{content}
-					</ReactMarkdown>
+					<MarkdownRenderer content={content} />
 				</div>
 			</div>
 		);
@@ -74,13 +65,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ note, isEditMode, submit
 			<div>
 				<NoteHeader title={title} createdAt={note?.createdAt} />
 				<div className="markdown-body">
-					<ReactMarkdown
-						remarkPlugins={[remarkDirective, remarkDirectiveRehype]}
-						remarkRehypeOptions={{ passThrough: ['quiz'] }}
-						rehypePlugins={[[rehypeHighlight, { ignoreMissing: true }]]}
-					>
-						{content}
-					</ReactMarkdown>
+					<MarkdownRenderer content={content} />
 				</div>
 			</div>
 
