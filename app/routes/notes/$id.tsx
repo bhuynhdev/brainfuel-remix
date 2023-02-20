@@ -13,6 +13,11 @@ export const links: LinksFunction = () => {
 			// Github Markdown: https://github.com/sindresorhus/github-markdown-css
 			href: 'https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown-light.css',
 		},
+		{
+			rel: 'stylesheet',
+			// Highlight.js CSS to be used with "rehype-highlight"
+			href: 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-light.min.css',
+		},
 	];
 };
 
@@ -52,7 +57,6 @@ export const action = async ({ request, params }: ActionArgs) => {
 			return json({});
 		}
 		case 'delete': {
-			// do your delete
 			await db.note.delete({ where: { id: noteId } });
 			const redirectTo = form.get('redirectTo');
 			// Redirect back if current active note is also note to delete

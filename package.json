@@ -16,10 +16,14 @@
     "@remix-run/react": "^1.13.0",
     "@remix-run/serve": "^1.13.0",
     "bcryptjs": "^2.4.3",
+    "highlight.js": "^11.7.0",
     "isbot": "^3.5.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-markdown": "^8.0.3",
+    "rehype-highlight": "^6.0.0",
+    "remark-directive": "^2.0.1",
+    "remark-directive-rehype": "^0.4.2",
     "zod": "^3.19.1"
   },
   "devDependencies": {

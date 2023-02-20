@@ -24,6 +24,14 @@ module.exports = {
 		/^react-markdown$/,
 		/^vfile.*/,
 		'trim-lines',
+		'stringify-entities',
+		'parse-entities',
+		'lowlight',
+		'is-decimal',
+		'is-hexadecimal',
+		'is-alphanumerical',
+		'is-alphabetical',
+		'fault'
 	],
 	future: {
 		unstable_tailwind: true,
