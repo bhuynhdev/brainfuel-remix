@@ -1,7 +1,7 @@
 import { json, LinksFunction, LoaderArgs, MetaFunction } from '@remix-run/node';
 import { Link, Links, LiveReload, Meta, Outlet, Scripts, ScrollRestoration, useLoaderData } from '@remix-run/react';
 import globalStyles from './styles/global.css';
-import tailwindStyles from './styles/app.css';
+import tailwindStyles from './styles/tailwind.css';
 import { getUser } from './utils/session.server';
 
 export const meta: MetaFunction = () => ({
