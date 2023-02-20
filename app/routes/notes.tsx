@@ -23,7 +23,7 @@ export const action = async ({ request }: ActionArgs) => {
 		data: { title: 'Untitled', content: '', userId: user.id },
 		select: { id: true },
 	});
-	return redirect(`notes/${createdNote.id}?edit=true`);
+	return redirect(`${createdNote.id}?edit=true`);
 };
 
 /**

@@ -7,7 +7,13 @@ import { db } from '~/utils/db.server';
 import { getUserId, requireUser } from '~/utils/session.server';
 
 export const links: LinksFunction = () => {
-	return [{ rel: 'stylesheet', href: markdownStyles }];
+	return [
+		{
+			rel: 'stylesheet',
+			// Github Markdown: https://github.com/sindresorhus/github-markdown-css
+			href: 'https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown-light.css',
+		},
+	];
 };
 
 export const loader = async ({ params, request }: LoaderArgs) => {

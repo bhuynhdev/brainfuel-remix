@@ -13,10 +13,27 @@ interface NoteEditorProps {
 export const NoteEditor: React.FC<NoteEditorProps> = ({ note, isEditMode, submitNoteFn, setEditMode }) => {
 	const [title, setTitle] = useState(note?.title || '');
 	const [content, setContent] = useState(note?.content || '');
+	const formRef = useRef<HTMLFormElement>(null);
+	const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
 	useEffect(() => {
+		// Focus the text area on page load
 		textAreaRef.current?.focus();
 	}, [isEditMode]);
+
+	useEffect(() => {
+		// Override Control + S to save note
+		const ctrlSHandler = (e: KeyboardEvent) => {
+			if (formRef.current && e.key === 's' && (e.metaKey || e.ctrlKey)) {
+				e.preventDefault();
+				submitNoteFn(formRef.current);
+			}
+		};
+		document.addEventListener('keydown', ctrlSHandler);
+		return () => {
+			document.removeEventListener('keydown', ctrlSHandler);
+		};
+	}, []);
 
 	const handleSaveNote = (e: FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -24,7 +41,6 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ note, isEditMode, submit
 		submitNoteFn(e.currentTarget);
 	};
 
-	const textAreaRef = useRef<HTMLTextAreaElement>(null);
 	if (!isEditMode) {
 		return (
 			<div className="relative" key={note?.id}>
@@ -36,7 +52,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ note, isEditMode, submit
 				>
 					Edit
 				</button>
-				<div className="rendered-md">
+				<div className="markdown-body">
 					<ReactMarkdown>{note?.content || ''}</ReactMarkdown>
 				</div>
 			</div>
@@ -48,12 +64,12 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ note, isEditMode, submit
 		<div className="relative grid h-full grid-cols-[45%,minmax(0,55%)] gap-10" key={note?.id}>
 			<div>
 				<NoteHeader title={title} createdAt={note?.createdAt} />
-				<div className="rendered-md">
+				<div className="markdown-body">
 					<ReactMarkdown>{content}</ReactMarkdown>
 				</div>
 			</div>
 
-			<form id="note-form" className="flex w-full flex-col gap-3" method="post" onSubmit={handleSaveNote}>
+			<form id="note-form" className="flex w-full flex-col gap-3" method="post" onSubmit={handleSaveNote} ref={formRef}>
 				<div>
 					<label htmlFor="note-title-input" className="sr-only">
 						Title:
