@@ -20,10 +20,11 @@ const CodeQuiz = ({ node }: CodeQuizProps): JSX.Element => {
 
 	return (
 		<form className="relative" onSubmit={checkQuizAnswer}>
+			<span className="absolute left-4 top-2 text-[10px] uppercase">{node.properties?.dataLang}</span>
 			<textarea
 				name="quiz-answer"
 				rows={5}
-				className={cn('bg-slate-200 rounded-lg p-4 w-full border-2', {
+				className={cn('bg-slate-200 rounded-lg px-4 py-5 w-full border-2', {
 					'border-green-600': answerStatus === 'correct',
 					'border-red-500': answerStatus === 'wrong',
 				})}
