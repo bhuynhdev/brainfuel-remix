@@ -5,14 +5,14 @@ import MarkdownRenderer from './MarkdownRenderer';
 
 interface NoteEditorProps {
 	note: LoadedNote;
-	isEditMode: boolean;
+	isEditModeInitial: boolean;
 	submitNoteFn: SubmitFunction;
-	setEditMode: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export const NoteEditor: React.FC<NoteEditorProps> = ({ note, isEditMode, submitNoteFn, setEditMode }) => {
+export const NoteEditor: React.FC<NoteEditorProps> = ({ note, isEditModeInitial, submitNoteFn }) => {
 	const [title, setTitle] = useState(note?.title || '');
 	const [content, setContent] = useState(note?.content || '');
+	const [isEditMode, setEditMode] = useState(isEditModeInitial);
 	const formRef = useRef<HTMLFormElement>(null);
 	const textAreaRef = useRef<HTMLTextAreaElement>(null);
 

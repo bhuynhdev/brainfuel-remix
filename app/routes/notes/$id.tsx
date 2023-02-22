@@ -75,7 +75,7 @@ export type LoadedNote = Awaited<ReturnType<typeof useLoaderData<typeof loader>>
 
 const Note: React.FC = () => {
 	const { note, editMode } = useLoaderData<typeof loader>();
-	const [isEditing, setIsEditting] = useState(editMode);
+	// const [isEditing, setIsEditting] = useState(editMode);
 	const submit = useSubmit();
 
 	if (!note) {
@@ -95,13 +95,7 @@ const Note: React.FC = () => {
 
 	return (
 		<>
-			<NoteEditor
-				note={note}
-				isEditMode={isEditing}
-				submitNoteFn={submit}
-				setEditMode={setIsEditting}
-				key={note?.id || 'undefined'}
-			/>
+			<NoteEditor note={note} isEditModeInitial={editMode} submitNoteFn={submit} key={note?.id || 'undefined'} />
 		</>
 	);
 };
