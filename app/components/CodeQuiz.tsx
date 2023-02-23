@@ -1,5 +1,5 @@
 import { FormEvent, useState } from 'react';
-import { type Element } from 'rehype-highlight/lib';
+import { type Element } from 'hast';
 import cn from 'classnames';
 
 interface CodeQuizProps {
