@@ -3,6 +3,7 @@ import { Link, useLoaderData, useSubmit } from '@remix-run/react';
 import React, { useState } from 'react';
 import { NoteEditor } from '~/components/NoteEditor';
 import markdownStyles from '~/styles/markdown.css';
+import flashCardStyles from '~/styles/flashcard.css';
 import { db } from '~/utils/db.server';
 import { getUserId, requireUser } from '~/utils/session.server';
 
@@ -18,6 +19,7 @@ export const links: LinksFunction = () => {
 			// Highlight.js CSS to be used with "rehype-highlight"
 			href: 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-light.min.css',
 		},
+		{ rel: 'stylesheet', href: flashCardStyles },
 	];
 };
 

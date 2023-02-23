@@ -1,0 +1,31 @@
+.flashcard-modal {
+	white-space: pre-wrap;
+}
+
+.flashcard {
+	position: relative;
+	width: 80ch;
+	height: 10em;
+	transform: rotateY(0deg);
+	transform-style: preserve-3d;
+	transition: transform 0.1s ease;
+	perspective: 1000px;
+}
+
+.flashcard.flipped {
+	transform: rotateY(180deg);
+}
+
+.flashcard__front,
+.flashcard__back {
+	position: absolute;
+  padding: 2em;
+	inset: 0;
+	backface-visibility: hidden;
+	transition: transform 0.1s ease;
+}
+
+/* We're turning the card 180deg on the Y axis, flipping the back side over by default. */
+.flashcard__back {
+	transform: rotateY(180deg);
+}

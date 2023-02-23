@@ -6,10 +6,10 @@ import rehypeSanitize, { defaultSchema, type Options as RehypeSanitizeOptions } 
 import remarkDirective from 'remark-directive';
 import remarkDirectiveRehype from 'remark-directive-rehype';
 import { rehypeCodeQuiz } from '~/utils/markdown-plugins';
-import CodeQuiz from './CodeQuiz';
-import cn from 'classnames';
 import type MDAST from 'mdast';
 import { type Element as HastElement } from 'hast';
+import CustomCodeBlock from './CustomCodeBlock';
+import { CodeProps } from 'react-markdown/lib/ast-to-react';
 
 interface MarkdownRendererProps {
 	content: string;
@@ -23,7 +23,7 @@ const remarkRehypeOptions: RemarkRehypeOptions = {
 			const preElement = defaultHandlers.code(h, node);
 			const codeElement = preElement.children[0] as HastElement;
 			// Inject the value into node.data
-			codeElement.data = Object.assign({ value: node.value }, codeElement.data);
+			codeElement.data = Object.assign({ value: node.value, lang: node.lang }, codeElement.data);
 			// Inject "data-lang" properties
 			codeElement.properties = Object.assign({ dataLang: node.lang || 'plaintext' }, codeElement.properties);
 			return preElement;
@@ -31,17 +31,14 @@ const remarkRehypeOptions: RemarkRehypeOptions = {
 	},
 };
 
+// Augmented node thanks to remark-rehype handler
+// Might not have `data` if is an inlineCode element
+type AugmentedCodeNode = HastElement & { data?: { value: string; lang: string; meta: string } };
+export type AugmentedCodeProps = CodeProps & { node: AugmentedCodeNode };
+
 const componentsOptions: ReactMarkdownComponentsOptions = {
 	// The "inline" prop isn't part of normal HTML attributes
-	code: ({ node, inline, children, className, ...props }) =>
-		(node.data?.meta as string)?.includes('quiz') && !inline ? (
-			<CodeQuiz node={node} />
-		) : (
-			<code {...props} className={cn(className, 'relative')}>
-				{!inline && <span className="absolute left-3 top-0 text-[10px] uppercase">{node.properties?.dataLang}</span>}
-				{children}
-			</code>
-		),
+	code: (props) => <CustomCodeBlock {...(props as AugmentedCodeProps)} />,
 };
 
 // Use rehype-sanitize with rehype-highlight: https://github.com/rehypejs/rehype-sanitize#example-syntax-highlighting
