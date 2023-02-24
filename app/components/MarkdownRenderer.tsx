@@ -33,7 +33,7 @@ const remarkRehypeOptions: RemarkRehypeOptions = {
 
 // Augmented node thanks to remark-rehype handler
 // Might not have `data` if is an inlineCode element
-type AugmentedCodeNode = HastElement & { data?: { value: string; lang: string; meta: string } };
+type AugmentedCodeNode = HastElement & { data?: { value?: string; lang?: string; meta?: string } };
 export type AugmentedCodeProps = CodeProps & { node: AugmentedCodeNode };
 
 const componentsOptions: ReactMarkdownComponentsOptions = {

@@ -24,6 +24,7 @@ const CodeQuiz = ({ node }: CodeQuizProps): JSX.Element => {
 			<textarea
 				name="quiz-answer"
 				rows={5}
+				spellCheck="false"
 				className={cn('bg-slate-200 rounded-lg px-4 py-5 w-full border-2', {
 					'border-green-600': answerStatus === 'correct',
 					'border-red-500': answerStatus === 'wrong',

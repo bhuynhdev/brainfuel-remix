@@ -11,7 +11,7 @@ const CustomCodeBlock: React.FC<CustomCodeBlockProps> = ({ node, inline, childre
 	if (language === 'qa') {
 		return <FlashCards node={node} />;
 	}
-	if (node.data?.meta.includes('quiz')) {
+	if (node.data?.meta?.includes('quiz')) {
 		return <CodeQuiz node={node} />;
 	}
 	// Normal code block
