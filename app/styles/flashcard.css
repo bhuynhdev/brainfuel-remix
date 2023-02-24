@@ -1,37 +1,50 @@
-.flashcard-modal {
-	white-space: pre-wrap;
-}
-
-.flashcard-container {
-	overflow: auto;
+.flashcard {
+	/* overflow: auto; */
 	max-width: 80ch;
 	position: relative;
 }
 
-.flashcard {
+.flashcard__content {
 	position: relative;
 	height: 15em;
 	transform: rotateY(0deg);
-	transform-style: preserve-3d;
-	transition: transform 0.1s ease;
 	perspective: 1000px;
 	border-radius: 10px;
-}
-
-.flashcard.flipped {
-	transform: rotateY(180deg);
 }
 
 .flashcard__front,
 .flashcard__back {
 	position: absolute;
+	max-width: 80ch;
+	white-space: pre-wrap;
 	inset: 0;
 	padding: 1.5em;
 	backface-visibility: hidden;
-	transition: transform 0.1s ease;
+	transition: opacity 0.05s ease-out;
+	transform-origin: top;
 }
 
 /* We're turning the card 180deg on the Y axis, flipping the back side over by default. */
 .flashcard__back {
-	transform: rotateY(180deg);
+	/* transform: rotateY(180deg); */
+	transform: scaleY(0);
+	opacity: 0;
+}
+
+.flashcard__back.flipped {
+	/* transform: rotateY(0deg); */
+	transform: scaleY(100%);
+	opacity: 1;
+}
+
+.flashcard__front {
+	/* transform: rotateY(0deg) */
+	transform: scaleY(100%);
+	opacity: 1;
+}
+
+.flashcard__front.flipped {
+	/* transform: rotateY(-180deg); */
+	transform: scaleY(0);
+	opacity: 0;
 }

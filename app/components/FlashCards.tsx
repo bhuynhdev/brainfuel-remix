@@ -22,6 +22,7 @@ const ANSWER_REGEX = /^>(?<=>)(.*?)(?=(?:\n\?>|$(?![\r\n])))/gms;
  * Zip to string array together, so their values are interleaving
  * @param arr1
  * @param arr2
+ * @returns The zipped array, and its length
  */
 function zip(arr1: string[], arr2: string[]) {
 	const len1 = arr1.length;
@@ -36,23 +37,24 @@ function zip(arr1: string[], arr2: string[]) {
 		for (let i = 0; i < diff; i++) arr1.push('');
 	}
 	// Zip array together, now that they are equal length
-	const result: Array<Array<string>> = [];
+	const result: Array<[string, string]> = [];
 	for (const [index, val1] of arr1.entries()) {
 		result.push([val1, arr2[index]]);
 	}
-	return result;
+	return [result, Math.max(len1, len2)] as const;
 }
 
 const FlashCards: React.FC<FlashCardProps> = ({ node }) => {
 	const modalRef = useRef<HTMLDialogElement>(null);
 	const [isCardFront, setIsCardFront] = useState(true);
+	const [cardIndex, setCardIndex] = useState(0);
 	const content = (node.data?.value as string) || '';
 	// Each entry in questions can be deemed as an array, where the 2nd item (and above) are the captured group
 	// Since we only have 1 capture group, the data we want is in the 2nd item
-	const questions = Array.from(content.matchAll(QUESTION_REGEX)).map((result) => result[1]);
-	const answers = Array.from(content.matchAll(ANSWER_REGEX)).map((result) => result[1]);
-	const qaPairs = zip(questions, answers);
-	// TODO: Create a flash card for each question and answer pairs
+	const questions = Array.from(content.matchAll(QUESTION_REGEX)).map((result) => result[1].trim());
+	const answers = Array.from(content.matchAll(ANSWER_REGEX)).map((result) => result[1].trim());
+	const [qaPairs, qaPairCount] = zip(questions, answers);
+	const [currentQuestion, currentAnswer, index] = qaPairCount > 0 ? qaPairs[cardIndex] : ['', '', 0];
 
 	const showModal = () => {
 		modalRef.current?.showModal();
@@ -72,28 +74,55 @@ const FlashCards: React.FC<FlashCardProps> = ({ node }) => {
 				>
 					Show
 				</button> */}
-				<div className="flashcard-container">
-					<button onClick={flipCard} className="flashcard__flipbtn absolute text-2xl right-2 top-2 z-10">
-						<span aria-label="flip" role="img">
-							🔄
-						</span>
+				<div className="flashcard">
+					<button
+						onClick={flipCard}
+						aria-label="flip"
+						className="flashcard__flipbtn absolute text-2xl right-2 top-2 z-10"
+					>
+						<span aria-hidden="true">🔄</span>
 					</button>
-					{qaPairs.map(([question, answer], index) => (
-						<div key={index} className={cn('flashcard bg-slate-200', { flipped: !isCardFront })}>
+					{/* Show the Next and Previous button only when there's at least 2 cards */}
+					{qaPairCount >= 2 && (
+						<>
+							<button
+								aria-label="next"
+								className="absolute top-24 z-10 right-1 text-xl"
+								onClick={() => {
+									setCardIndex((idx) => (idx + 1) % qaPairCount);
+									setIsCardFront(true);
+								}}
+							>
+								<span aria-hidden="true">⏭️</span>
+							</button>
+							<button
+								aria-label="previous"
+								className="absolute top-24 z-10 left-1 text-xl"
+								onClick={() => {
+									setCardIndex((idx) => (idx + qaPairCount - 1) % qaPairCount);
+									setIsCardFront(true);
+								}}
+							>
+								<span aria-hidden="true">⏮️</span>
+							</button>
+						</>
+					)}
+					{qaPairCount > 0 && (
+						<div key={index} className={cn('flashcard__content bg-slate-200')}>
 							<div className="flashcard__skeleton invisible"></div>
-							<div className="flashcard__front">
+							<div className={cn('flashcard__front', { flipped: !isCardFront })}>
 								<p className="font-bold text-lg">Question</p>
-								<p>{question}</p>
+								<p className="ml-4">{currentQuestion}</p>
 							</div>
-							<div className="flashcard__back">
+							<div className={cn('flashcard__back', { flipped: !isCardFront })}>
 								<p className="font-bold text-lg">Answer</p>
-								<p>{answer}</p>
+								<p className="ml-4">{currentAnswer}</p>
 							</div>
 						</div>
-					))}
+					)}
 				</div>
 			</div>
-			<dialog className="flashcard-modal font-sans" ref={modalRef}>
+			{/* <dialog className="flashcard-modal font-sans" ref={modalRef}>
 				<button onClick={flipCard}>Flip</button>
 				{qaPairs.map(([question, answer], index) => (
 					<div key={index} className={cn('flashcard', { flipped: !isCardFront })}>
@@ -101,7 +130,7 @@ const FlashCards: React.FC<FlashCardProps> = ({ node }) => {
 						<div className="flashcard__back bg-slate-200">{answer}</div>
 					</div>
 				))}
-			</dialog>
+			</dialog> */}
 		</>
 	);
 };
