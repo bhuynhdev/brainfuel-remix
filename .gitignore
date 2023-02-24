@@ -6,3 +6,9 @@ node_modules
 
 /prisma/dev.db
 .env
+
+.vercel
+.output
+
+/api/index.js
+/api/index.js.map
