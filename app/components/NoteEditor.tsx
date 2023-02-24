@@ -13,7 +13,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ note, isEditModeInitial,
 	const [title, setTitle] = useState(note?.title || '');
 	const [content, setContent] = useState(note?.content || '');
 	const [isEditMode, setEditMode] = useState(isEditModeInitial);
-	const formRef = useRef<HTMLFormElement>(null);
+	const noteEditFormRef = useRef<HTMLFormElement>(null);
 	const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
 	useEffect(() => {
@@ -22,16 +22,23 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ note, isEditModeInitial,
 	}, [isEditMode]);
 
 	useEffect(() => {
-		// Override Control + S to save note
-		const ctrlSHandler = (e: KeyboardEvent) => {
-			if (formRef.current && e.key === 's' && (e.metaKey || e.ctrlKey)) {
+		const keyMapHandler = (e: KeyboardEvent) => {
+			// Override Control + S to save note
+			if (noteEditFormRef.current && e.key === 's' && (e.metaKey || e.ctrlKey)) {
 				e.preventDefault();
-				submitNoteFn(formRef.current);
+				return submitNoteFn(noteEditFormRef.current);
+			}
+			// Override Control + Q to Toggle edit mode (and save note)
+			if (e.key === 'q' && (e.metaKey || e.ctrlKey)) {
+				e.preventDefault();
+				if (!isEditMode) {
+					return setEditMode(true);
+				}
 			}
 		};
-		document.addEventListener('keydown', ctrlSHandler);
+		document.addEventListener('keydown', keyMapHandler);
 		return () => {
-			document.removeEventListener('keydown', ctrlSHandler);
+			document.removeEventListener('keydown', keyMapHandler);
 		};
 	}, []);
 
@@ -69,7 +76,13 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ note, isEditModeInitial,
 				</div>
 			</div>
 
-			<form id="note-form" className="flex w-full flex-col gap-3" method="post" onSubmit={handleSaveNote} ref={formRef}>
+			<form
+				id="note-form"
+				className="flex w-full flex-col gap-3"
+				method="post"
+				onSubmit={handleSaveNote}
+				ref={noteEditFormRef}
+			>
 				<div>
 					<label htmlFor="note-title-input" className="sr-only">
 						Title:

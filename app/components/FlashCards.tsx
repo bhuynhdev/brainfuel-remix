@@ -64,21 +64,41 @@ const FlashCards: React.FC<FlashCardProps> = ({ node }) => {
 
 	return (
 		<>
-			<div className="relative min-h-[150px] font-sans">
-				<button
+			<div className="relative font-sans">
+				{/* <button
 					type="button"
 					className="absolute right-[7%] top-2 bg-purple-300 py-1 px-3 rounded-lg font-sans"
 					onClick={showModal}
 				>
 					Show
-				</button>
+				</button> */}
+				<div className="flashcard-container">
+					<button onClick={flipCard} className="flashcard__flipbtn absolute text-2xl right-2 top-2 z-10">
+						<span aria-label="flip" role="img">
+							🔄
+						</span>
+					</button>
+					{qaPairs.map(([question, answer], index) => (
+						<div key={index} className={cn('flashcard bg-slate-200', { flipped: !isCardFront })}>
+							<div className="flashcard__skeleton invisible"></div>
+							<div className="flashcard__front">
+								<p className="font-bold text-lg">Question</p>
+								<p>{question}</p>
+							</div>
+							<div className="flashcard__back">
+								<p className="font-bold text-lg">Answer</p>
+								<p>{answer}</p>
+							</div>
+						</div>
+					))}
+				</div>
 			</div>
 			<dialog className="flashcard-modal font-sans" ref={modalRef}>
 				<button onClick={flipCard}>Flip</button>
 				{qaPairs.map(([question, answer], index) => (
 					<div key={index} className={cn('flashcard', { flipped: !isCardFront })}>
-						<div className="flashcard__front">{question}</div>
-						<div className="flashcard__back">{answer}</div>
+						<div className="flashcard__front bg-slate-200">{question}</div>
+						<div className="flashcard__back bg-slate-200">{answer}</div>
 					</div>
 				))}
 			</dialog>
