@@ -5,9 +5,13 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// Since PlanetScale does not support foreign keys constraint, we need a couple of changes to Primsa
+// https://www.prisma.io/docs/guides/database/using-prisma-with-planetscale#how-to-emulate-relations-in-prisma-client
+
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
+  relationMode = "prisma"
 }
 
 model Note {
@@ -18,6 +22,8 @@ model Note {
   content   String   @db.Text
   userId    String
   user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
 }
 
 model User {
