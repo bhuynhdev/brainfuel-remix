@@ -7,8 +7,7 @@ node_modules
 /prisma/dev.db
 .env
 
+/.netlify
 .vercel
-.output
-
 /api/index.js
 /api/index.js.map
