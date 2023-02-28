@@ -5,8 +5,8 @@ module.exports = {
 	// assetsBuildDirectory: "public/build",
 	// serverBuildPath: "build/index.js",
 	// publicPath: "/build/",
-	server: process.env.NODE_ENV === "development" ? undefined : "./server.js",
-  serverBuildPath: "api/index.js",
+	server: process.env.NETLIFY || process.env.NETLIFY_LOCAL ? "./server.js" : undefined,
+  serverBuildPath: ".netlify/functions-internal/server.js",
 	serverDependenciesToBundle: [
 		// remix ESM issue: https://github.com/remix-run/remix/issues/109#issuecomment-1100583571
 		/^rehype.*/,
@@ -34,6 +34,7 @@ module.exports = {
 		'is-alphanumerical',
 		'is-alphabetical',
 		'is-plain-obj',
+		'is-buffer',
 		'fault'
 	],
 	future: {
