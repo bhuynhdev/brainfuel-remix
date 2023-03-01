@@ -1,53 +1,65 @@
-# Welcome to Remix!
+# 🧠BrainFuel
+The interactive note-taking app that supports your active learning
 
-- [Remix Docs](https://remix.run/docs)
+[CHECKOUT OUR DEMO HERE](https://brainfuel.up.railway.app/)
 
-## Development
+## Problems
+* Typed note taking encouraged passive learning patterns
+  * Students just regurgitate the professor's words
+  * Review for exams by only passively re-reading notes
+* Fragmentation of tooling
+  * Context-switching mental overhead to switch between apps
+  * Time-consuming to port content from one app to another
 
-From your terminal:
+→ What if our learning process can be more engaging (and effective) by making the notes more interactive?
 
-```sh
-npm run dev
-```
+You take your notes like normal, and then with a few small markup words, we transform your notes interactive partner to help you actively enhance higher-order learning
 
-This starts your app in development mode, rebuilding assets on file changes.
+## Solution
 
-## Deployment
+🧠BrainFuel🔥
+* Leverage [Markdown](https://www.markdownguide.org/basic-syntax/) - a simple syntax for quickly styling your text
+* Enhanced syntax - simple words to create a Quiz or a Flashcard (and many more in the future)
 
-First, build your app for production:
+## Markset size and trends
 
-```sh
-npm run build
-```
+* TAM = [EdTech software](https://www.grandviewresearch.com/industry-analysis/education-technology-market) = **38.44B**
 
-Then run the app in production mode:
+* SAM = Cloud-based EdTech targeted at K-12 and above = **9.22B**
 
-```sh
-npm start
-```
+* SOM = 17% of SAM is content-mamangement-focused * 15% Market share between competitors = **242M**
 
-Now you'll need to pick a host to deploy it to.
+Software As a Service (SaaS) trend, valued at USD 165.9 billion in 2021, is anticipated to expand 11.0% anually from 2022 to 2028
 
-### DIY
+## Business Model
 
-If you're familiar with deploying node applications, the built-in Remix app server is production-ready.
+Tiered pricing
+* Free Personal tier
+  * Personal notes only
+  * Limit: 1000 words, 1000 flashcards
+* Team tier: $5/month per user
+  * Support shared notes and collaboration up to 10 people
+  * Higher limit: 5000 words, 5000 flashcards
+* Organization tier: $15/month per user
+  * Unlimited
+  * Access to feature preview
+  * Better tech support and customization
 
-Make sure to deploy the output of `remix build`
+## Go-to-market strategy
+- Campus tabling and advertisement
+- Interest survey to collect emails (and redirect to landing page)
+- Build in public → engagement from social media
 
-- `build/`
-- `public/build/`
+## Competition
+Other markdown-based note taker
+|                         | 🧠Brainfuel   | Notion | Evernote | Obsidian |
+| ----------------------- | -------------- | ------ | -------- | -------- |
+| Interactive             | ✅            |  1/2   |  ❌      | ❌      |
+| Web-based               | ✅            | ✅     | ✅      | ❌       |
+| Active learning tools   | ✅            | ❌     | ❌      | ✅       |
+<!-- | AI Integration          | 1/2            | ✅    | ❌     | ❌        | -->
 
-### Using a Template
-
-When you ran `npx create-remix@latest` there were a few choices for hosting. You can run that again to create a new project, then copy over your `app/` folder to the new project that's pre-configured for your target server.
-
-```sh
-cd ..
-# create a new project, and pick a pre-configured host
-npx create-remix@latest
-cd my-new-remix-app
-# remove the new project's app (not the old one!)
-rm -rf app
-# copy your app over
-cp -R ../my-old-remix-app/app app
-```
+Competitive advantages
+* First to market
+* Open source software
+* Potential integration with AI
