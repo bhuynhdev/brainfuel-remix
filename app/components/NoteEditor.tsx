@@ -3,13 +3,35 @@ import { FormEvent, useEffect, useRef, useState } from 'react';
 import { LoadedNote } from '~/routes/notes/$id';
 import MarkdownRenderer from './MarkdownRenderer';
 
-interface NoteEditorProps {
+type NoteViewerProps = {
 	note: LoadedNote;
+	author: { name: string };
+	showAuthor?: boolean;
+};
+
+type NoteEditorProps = NoteViewerProps & {
 	isEditModeInitial: boolean;
 	submitNoteFn: SubmitFunction;
+};
+
+export function NoteViewer({ note, author, showAuthor = false }: NoteViewerProps) {
+	if (!note) {
+		return <div></div>;
+	}
+	const { title, createdAt, content } = note;
+	return (
+		<div>
+			{showAuthor && <p>Author: {author.name}</p>}
+			<p className="mb-4">Last updated {createdAt ? new Date(createdAt).toLocaleString() : Date()}</p>
+			<h1 className="mb-12 text-5xl font-bold">{title || ''}</h1>
+			<div className="markdown-body">
+				<MarkdownRenderer content={content} />
+			</div>
+		</div>
+	);
 }
 
-export const NoteEditor: React.FC<NoteEditorProps> = ({ note, isEditModeInitial, submitNoteFn }) => {
+export function NoteEditor({ note, author, isEditModeInitial, submitNoteFn }: NoteEditorProps) {
 	const [title, setTitle] = useState(note?.title || '');
 	const [content, setContent] = useState(note?.content || '');
 	const [isEditMode, setEditMode] = useState(isEditModeInitial);
@@ -51,7 +73,6 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ note, isEditModeInitial,
 	if (!isEditMode) {
 		return (
 			<div className="relative" key={note?.id}>
-				<NoteHeader title={note?.title} createdAt={note?.createdAt} />
 				<button
 					type="button"
 					onClick={() => setEditMode(true)}
@@ -59,9 +80,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ note, isEditModeInitial,
 				>
 					Edit
 				</button>
-				<div className="markdown-body">
-					<MarkdownRenderer content={content} />
-				</div>
+				<NoteViewer note={note} author={author} />
 			</div>
 		);
 	}
@@ -69,12 +88,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ note, isEditModeInitial,
 	// Edit mode
 	return (
 		<div className="relative grid h-full grid-cols-[45%,minmax(0,55%)] gap-10" key={note?.id}>
-			<div>
-				<NoteHeader title={title} createdAt={note?.createdAt} />
-				<div className="markdown-body">
-					<MarkdownRenderer content={content} />
-				</div>
-			</div>
+			<NoteViewer note={note} author={author} />
 
 			<form
 				id="note-form"
@@ -125,13 +139,4 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ note, isEditModeInitial,
 			</div>
 		</div>
 	);
-};
-
-const NoteHeader: React.FC<{ createdAt?: string; title?: string }> = ({ createdAt, title }) => {
-	return (
-		<>
-			<p className="mb-4">Last updated {createdAt ? new Date(createdAt).toLocaleString() : Date()}</p>
-			<h1 className="mb-12 text-5xl font-bold">{title || ''}</h1>
-		</>
-	);
-};
+}
