@@ -9,7 +9,7 @@ async function seed() {
 	});
 	await Promise.all(
 		getNotes().map((note) => {
-			return db.note.create({ data: { ...note, userId: devUser.id } });
+			return db.note.create({ data: { ...note, authorId: devUser.id } });
 		})
 	);
 }
@@ -28,7 +28,7 @@ function getNotes() {
 	return [{ title: 'Using BrainFuel🧠', content: NOTE_SEED_CONTENT }];
 }
 
-const NOTE_SEED_CONTENT = ` # This is markdown
+const NOTE_SEED_CONTENT = `# This is markdown
 
 ## Quickly create heading 2
 

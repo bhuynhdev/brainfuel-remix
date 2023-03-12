@@ -20,10 +20,10 @@ model Note {
   updatedAt DateTime @updatedAt
   title     String   @default("Untitled")
   content   String   @db.Text
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id])
 
-  @@index([userId])
+  @@index([authorId])
 }
 
 model User {
