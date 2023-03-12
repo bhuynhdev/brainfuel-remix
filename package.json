@@ -2,6 +2,7 @@
 	"private": true,
 	"sideEffects": false,
 	"scripts": {
+		"lintts": "tsc",
 		"build": "remix build",
 		"build:css": "tailwindcss -m -i ./styles/app.css -o app/styles/app.css",
 		"dev-old": "concurrently \"npm run dev:css\" \"remix dev\"",

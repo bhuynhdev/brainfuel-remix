@@ -14,13 +14,13 @@ export const loader = async ({ request }: LoaderArgs) => {
 	if (!user) {
 		return json({ notes: [] });
 	}
-	return json({ notes: await db.note.findMany({ where: { userId: user.id } }) });
+	return json({ notes: await db.note.findMany({ where: { authorId: user.id } }) });
 };
 
 export const action = async ({ request }: ActionArgs) => {
 	const user = await requireUser(request);
 	const createdNote = await db.note.create({
-		data: { title: 'Untitled', content: '', userId: user.id },
+		data: { title: 'Untitled', content: '', authorId: user.id },
 		select: { id: true },
 	});
 	return redirect(`${createdNote.id}?edit=true`);

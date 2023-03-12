@@ -28,12 +28,12 @@ export const loader = async ({ params, request }: LoaderArgs) => {
 	const url = new URL(request.url);
 	const edit = url.searchParams.get('edit'); // Open the note in edit mode or not
 	const note = await db.note.findUnique({ where: { id: params.id } });
-	const noteAuthor = await db.user.findUnique({ where: { id: note?.userId }, select: { id: true, username: true } });
+	const noteAuthor = await db.user.findUnique({ where: { id: note?.authorId }, select: { id: true, username: true } });
 	const userId = await getUserId(request);
 	// Show sidebar when the note owner is the current user
 	// Else (if the current viewer is not the owner, or user not logged in) should not show sidebar
 	// This info is to be used on "notes" parent route with "useMatches"
-	const showSidebar = userId && userId === note?.userId;
+	const showSidebar = userId && userId === note?.authorId;
 	return json({ user, note, author: noteAuthor, editMode: edit === 'true', showSidebar });
 };
 
@@ -46,7 +46,7 @@ export const action = async ({ request, params }: ActionArgs) => {
 	if (!note) {
 		return json({});
 	}
-	if (note.userId !== user.id) {
+	if (note.authorId !== user.id) {
 		throw new Response('Permission denied', { status: 403 });
 	}
 	const _action = form.get('_action');
@@ -106,7 +106,7 @@ const Note: React.FC = () => {
 	}
 
 	// If user is not logged in, or user is not note's author, then View only
-	if (!user || note.userId !== user.id) {
+	if (!user || note.authorId !== user.id) {
 		return <NoteViewer note={note} author={{ name: author?.username || 'Unknown' }} showAuthor />;
 	}
 
