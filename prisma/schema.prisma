@@ -9,8 +9,8 @@ generator client {
 // https://www.prisma.io/docs/guides/database/using-prisma-with-planetscale#how-to-emulate-relations-in-prisma-client
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
   relationMode = "prisma"
 }
 
