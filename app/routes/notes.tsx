@@ -1,5 +1,14 @@
 import { ActionArgs, json, LinksFunction, LoaderArgs, redirect } from '@remix-run/node';
-import { Link, Outlet, RouteMatch, useFetcher, useLoaderData, useMatches } from '@remix-run/react';
+import {
+	Form,
+	Link,
+	Outlet,
+	RouteMatch,
+	useFetcher,
+	useLoaderData,
+	useMatches,
+	useSearchParams,
+} from '@remix-run/react';
 import styles from '~/styles/notes.css';
 import { db } from '~/utils/db.server';
 import { getUser, requireUser } from '~/utils/session.server';
@@ -8,13 +17,27 @@ export const links: LinksFunction = () => {
 	return [{ rel: 'stylesheet', href: styles }];
 };
 
+// The query param name used for the search form
+const SEARCH_QUERY_KEY = 'q';
+
 export const loader = async ({ request }: LoaderArgs) => {
+	const url = new URL(request.url);
+	const searchQuery = url.searchParams.get(SEARCH_QUERY_KEY) || undefined;
 	// Can't use "requireUser" here because "/notes/$id" route may be public
 	const user = await getUser(request);
 	if (!user) {
 		return json({ notes: [] });
 	}
-	return json({ notes: await db.note.findMany({ where: { authorId: user.id } }) });
+	return json({
+		notes: await db.note.findMany({
+			where: {
+				authorId: user.id,
+				title: {
+					contains: searchQuery,
+				},
+			},
+		}),
+	});
 };
 
 export const action = async ({ request }: ActionArgs) => {
@@ -44,6 +67,7 @@ function extractActiveRouteData(matches: RouteMatch[]) {
 export default function Notes() {
 	const fetcher = useFetcher();
 	const matches = useMatches();
+	const [queryParams] = useSearchParams();
 	const { currentNote, noteData } = extractActiveRouteData(matches);
 	// Should also show sidebar in case "$id" route is not matched - no activeNote, i.e in the root "/notes" route
 	const sideBarShouldShow = !currentNote || noteData.showSidebar;
@@ -67,12 +91,14 @@ export default function Notes() {
 								</button>
 							</form>
 						</div>
-						<fetcher.Form className="mb-4 flex overflow-hidden rounded-xl border-2 border-slate-600 px-2 py-1">
+						<Form method="get" className="mb-4 flex overflow-hidden rounded-xl border-2 border-slate-600 px-2 py-1">
 							<input
 								type="search"
-								name="search"
+								name={SEARCH_QUERY_KEY}
 								id="notes-search"
 								className="flex-auto px-2 focus:outline-transparent"
+								placeholder="Search note titles..."
+								defaultValue={queryParams.get(SEARCH_QUERY_KEY) || ''}
 							/>
 							<label htmlFor="notes-search" aria-label="Search">
 								<svg width="20" height="20" viewBox="0 0 20 20">
@@ -80,13 +106,13 @@ export default function Notes() {
 										d="M14.386 14.386l4.0877 4.0877-4.0877-4.0877c-2.9418 2.9419-7.7115 2.9419-10.6533 0-2.9419-2.9418-2.9419-7.7115 0-10.6533 2.9418-2.9419 7.7115-2.9419 10.6533 0 2.9419 2.9418 2.9419 7.7115 0 10.6533z"
 										stroke="currentColor"
 										fill="none"
-										fill-rule="evenodd"
-										stroke-linecap="round"
-										stroke-linejoin="round"
+										fillRule="evenodd"
+										strokeLinecap="round"
+										strokeLinejoin="round"
 									></path>
 								</svg>
 							</label>
-						</fetcher.Form>
+						</Form>
 						<ul className="flex flex-col gap-4 overflow-y-auto">
 							{notes.map((note) => (
 								<li key={note.id} className="relative">
