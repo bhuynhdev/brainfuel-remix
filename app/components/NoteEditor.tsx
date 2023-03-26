@@ -39,7 +39,7 @@ export function NoteEditor({ note, author, isEditModeInitial, submitNoteFn }: No
 	const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
 	useEffect(() => {
-		// Focus the text area on page load
+		// Focus the text area (instead of the title text input) upon entering Edit mode
 		textAreaRef.current?.focus();
 	}, [isEditMode]);
 

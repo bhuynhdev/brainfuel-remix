@@ -61,12 +61,32 @@ export default function Notes() {
 							<form method="POST" action="/notes">
 								<button
 									type="submit"
-									className="rounded-3xl bg-blue-500 px-4 py-2 font-bold uppercase tracking-wider text-white"
+									className="rounded-3xl bg-blue-500 px-4 py-2 text-sm font-bold uppercase tracking-wider text-white"
 								>
 									New
 								</button>
 							</form>
 						</div>
+						<fetcher.Form className="mb-4 flex overflow-hidden rounded-xl border-2 border-slate-600 px-2 py-1">
+							<input
+								type="search"
+								name="search"
+								id="notes-search"
+								className="flex-auto px-2 focus:outline-transparent"
+							/>
+							<label htmlFor="notes-search" aria-label="Search">
+								<svg width="20" height="20" viewBox="0 0 20 20">
+									<path
+										d="M14.386 14.386l4.0877 4.0877-4.0877-4.0877c-2.9418 2.9419-7.7115 2.9419-10.6533 0-2.9419-2.9418-2.9419-7.7115 0-10.6533 2.9418-2.9419 7.7115-2.9419 10.6533 0 2.9419 2.9418 2.9419 7.7115 0 10.6533z"
+										stroke="currentColor"
+										fill="none"
+										fill-rule="evenodd"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+									></path>
+								</svg>
+							</label>
+						</fetcher.Form>
 						<ul className="flex flex-col gap-4 overflow-y-auto">
 							{notes.map((note) => (
 								<li key={note.id} className="relative">
