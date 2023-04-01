@@ -1,13 +1,13 @@
 import { ActionArgs, json, LinksFunction } from '@remix-run/node';
-import { Form, useActionData, useFetcher, useSearchParams } from '@remix-run/react';
-import { useEffect, useState } from 'react';
+import { Form, useActionData, useFetcher, useSearchParams, useSubmit } from '@remix-run/react';
+import { MouseEvent, useEffect, useState } from 'react';
 import { z } from 'zod';
 import SmallSpinner from '~/components/SmallSpinner';
+import styles from '~/styles/login-register.css';
 import { db } from '~/utils/db.server';
 import { useDebouncedState } from '~/utils/hooks';
-import { createUserSession, register } from '~/utils/session.server';
-import styles from '~/styles/login-register.css';
 import { validateAppUrl } from '~/utils/misc';
+import { createUserSession, register } from '~/utils/session.server';
 
 export const links: LinksFunction = () => {
 	return [{ href: styles, rel: 'stylesheet' }];
@@ -133,10 +133,20 @@ Y88b  d88P Y88..88P 888  888  888 888 d88P Y88..88P 888  888 Y8b.     888  888 Y
 
 export default function Register(): JSX.Element {
 	const actionData = useActionData<ActionData>();
+	const guestLogin = useSubmit();
 	const [debouncedUsername, isDebouncing, username, setUsername] = useDebouncedState('', 700);
 	const [fieldErrors, setFieldErrors] = useState(actionData?.fieldErrors);
 	const [searchParams] = useSearchParams();
 	const usernameCheckFetcher = useFetcher();
+
+	function handleGuestLogin(e: MouseEvent<HTMLButtonElement>) {
+		e.preventDefault();
+		const guestLoginFormData = new FormData();
+		guestLoginFormData.set('username', 'demo');
+		guestLoginFormData.set('password', 'password');
+		guestLoginFormData.set('redirectTo', searchParams.get('redirectTo') ?? '');
+		guestLogin(guestLoginFormData, { method: 'post', action: '/login' });
+	}
 
 	useEffect(() => {
 		// Synchronize with actionData from server
@@ -228,6 +238,9 @@ export default function Register(): JSX.Element {
 						{fieldErrors.passwordConfirm}
 					</p>
 				) : null}
+				<button type="submit" className="rounded-lg bg-blue-200 px-4 py-2" onClick={handleGuestLogin}>
+					Guest Login
+				</button>
 				<button type="submit" className="rounded-lg bg-blue-400 px-4 py-2">
 					Register
 				</button>
