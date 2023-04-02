@@ -28,7 +28,9 @@ export const loader = async ({ params, request }: LoaderArgs) => {
 	const url = new URL(request.url);
 	const edit = url.searchParams.get('edit'); // Open the note in edit mode or not
 	const note = await db.note.findUnique({ where: { id: params.id } });
-	const noteAuthor = await db.user.findUnique({ where: { id: note?.authorId }, select: { id: true, username: true } });
+	const noteAuthor = note
+		? await db.user.findUnique({ where: { id: note.authorId }, select: { id: true, username: true } })
+		: null;
 	const userId = await getUserId(request);
 	// Show sidebar when the note owner is the current user
 	// Else (if the current viewer is not the owner, or user not logged in) should not show sidebar
