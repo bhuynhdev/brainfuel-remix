@@ -4,8 +4,16 @@ const db = new PrismaClient();
 
 async function seed() {
 	const passwordHash = await bcrypt.hash('password', 10);
-	const devUser = await db.user.create({
-		data: { username: 'demo', passwordHash },
+	const devUser = await db.user.upsert({
+		where: { username: 'demo' },
+		update: {
+			username: 'demo',
+			passwordHash,
+		},
+		create: {
+			username: 'demo',
+			passwordHash,
+		},
 	});
 	await Promise.all(
 		getNotes().map((note) => {
