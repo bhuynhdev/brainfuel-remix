@@ -1,6 +1,6 @@
 import { ActionArgs, json, LinksFunction, LoaderArgs, redirect, Response } from '@remix-run/node';
-import { Link, useLoaderData, useSubmit } from '@remix-run/react';
-import React, { useState } from 'react';
+import { Link, useLoaderData, useSearchParams, useSubmit } from '@remix-run/react';
+import React, { useEffect } from 'react';
 import { NoteEditor, NoteViewer } from '~/components/NoteEditor';
 import markdownStyles from '~/styles/markdown.css';
 import flashCardStyles from '~/styles/flashcard.css';
@@ -89,8 +89,20 @@ export type LoadedNote = Awaited<ReturnType<typeof useLoaderData<typeof loader>>
 
 const Note: React.FC = () => {
 	const { user, note, author, editMode } = useLoaderData<typeof loader>();
-	// const [isEditing, setIsEditting] = useState(editMode);
+	const [searchParams, setSearchParams] = useSearchParams();
 	const submit = useSubmit();
+
+	useEffect(() => {
+		// Remove the "edit" searchParams that get passed when a new note is created
+		// This way, when user naviagates backward, they don't unexpectedly open up the Edit panel
+		setSearchParams(
+			(prev) => {
+				prev.delete('edit');
+				return prev;
+			},
+			{ replace: true }
+		);
+	}, []);
 
 	if (!note) {
 		return (
