@@ -24,9 +24,7 @@ export function NoteViewer({ note, author, showAuthor = false }: NoteViewerProps
 			{showAuthor && <p>Author: {author.name}</p>}
 			<p className="mb-4">Last updated {createdAt ? new Date(createdAt).toLocaleString() : Date()}</p>
 			<h1 className="mb-12 text-5xl font-bold">{title || ''}</h1>
-			<div className="markdown-body">
-				<MarkdownRenderer content={content} />
-			</div>
+			<MarkdownRenderer content={content} />
 		</div>
 	);
 }
@@ -43,26 +41,26 @@ export function NoteEditor({ note, author, isEditModeInitial, submitNoteFn }: No
 		textAreaRef.current?.focus();
 	}, [isEditMode]);
 
-	useEffect(() => {
-		const keyMapHandler = (e: KeyboardEvent) => {
-			// Override Control + S to save note
-			if (noteEditFormRef.current && e.key === 's' && (e.metaKey || e.ctrlKey)) {
-				e.preventDefault();
-				return submitNoteFn(noteEditFormRef.current);
-			}
-			// Override Control + Q to Toggle edit mode (and save note)
-			if (e.key === 'q' && (e.metaKey || e.ctrlKey)) {
-				e.preventDefault();
-				if (!isEditMode) {
-					return setEditMode(true);
-				}
-			}
-		};
-		document.addEventListener('keydown', keyMapHandler);
-		return () => {
-			document.removeEventListener('keydown', keyMapHandler);
-		};
-	}, []);
+	// useEffect(() => {
+	// 	const keyMapHandler = (e: KeyboardEvent) => {
+	// 		// Override Control + S to save note
+	// 		if (noteEditFormRef.current && e.key === 's' && (e.metaKey || e.ctrlKey)) {
+	// 			e.preventDefault();
+	// 			return submitNoteFn(noteEditFormRef.current);
+	// 		}
+	// 		// Override Control + Q to Toggle edit mode (and save note)
+	// 		if (e.key === 'q' && (e.metaKey || e.ctrlKey)) {
+	// 			e.preventDefault();
+	// 			if (!isEditMode) {
+	// 				return setEditMode(true);
+	// 			}
+	// 		}
+	// 	};
+	// 	document.addEventListener('keydown', keyMapHandler);
+	// 	return () => {
+	// 		document.removeEventListener('keydown', keyMapHandler);
+	// 	};
+	// }, []);
 
 	const handleSaveNote = (e: FormEvent<HTMLFormElement>) => {
 		e.preventDefault();

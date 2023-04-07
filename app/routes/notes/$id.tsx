@@ -6,13 +6,14 @@ import markdownStyles from '~/styles/markdown.css';
 import flashCardStyles from '~/styles/flashcard.css';
 import { db } from '~/utils/db.server';
 import { getUser, getUserId, requireUser } from '~/utils/session.server';
+import themeNordMilkdown from '@milkdown/theme-nord/style.css';
 
 export const links: LinksFunction = () => {
 	return [
 		{
 			rel: 'stylesheet',
 			// Github Markdown: https://github.com/sindresorhus/github-markdown-css
-			href: 'https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown-light.css',
+			href: themeNordMilkdown,
 		},
 		{
 			rel: 'stylesheet',
