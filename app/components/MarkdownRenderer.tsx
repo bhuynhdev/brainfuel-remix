@@ -8,7 +8,7 @@ import remarkDirectiveRehype from 'remark-directive-rehype';
 import { rehypeCodeQuiz } from '~/utils/markdown-plugins';
 import type MDAST from 'mdast';
 import { type Element as HastElement } from 'hast';
-import CustomCodeBlock from './CustomCodeBlock';
+import CustomCodeBlock, { codeBlockWithMeta } from './CustomCodeBlock';
 import { CodeProps } from 'react-markdown/lib/ast-to-react';
 import { Milkdown, MilkdownProvider, useEditor } from '@milkdown/react';
 import { defaultValueCtx, Editor, editorViewOptionsCtx, rootCtx } from '@milkdown/core';
@@ -96,6 +96,7 @@ const MilkdownEditor = ({ content }: MarkdownRendererProps) => {
 				ctx.set(defaultValueCtx, content);
 			})
 			.use(commonmark)
+			.use(codeBlockWithMeta)
 			.use($view(codeBlockSchema.node, () => nodeViewFactory({ component: CustomCodeBlock })))
 			.use(history);
 	});
