@@ -13,10 +13,11 @@ import { CodeProps } from 'react-markdown/lib/ast-to-react';
 import { Milkdown, MilkdownProvider, useEditor } from '@milkdown/react';
 import { defaultValueCtx, Editor, editorViewOptionsCtx, rootCtx } from '@milkdown/core';
 import { nord } from '@milkdown/theme-nord';
-import { commonmark } from '@milkdown/preset-commonmark';
+import { codeBlockSchema, commonmark } from '@milkdown/preset-commonmark';
 import { ClientOnly } from 'remix-utils';
-import { ProsemirrorAdapterProvider } from '@prosemirror-adapter/react';
+import { ProsemirrorAdapterProvider, useNodeViewFactory } from '@prosemirror-adapter/react';
 import { history } from '@milkdown/plugin-history';
+import { $view, getMarkdown } from '@milkdown/utils';
 
 interface MarkdownRendererProps {
 	content: string;
@@ -79,6 +80,8 @@ const rehypeSanitizeOptions: RehypeSanitizeOptions = {
 // });
 
 const MilkdownEditor = ({ content }: MarkdownRendererProps) => {
+	const nodeViewFactory = useNodeViewFactory();
+
 	useEditor((root) => {
 		return Editor.make()
 			.config((ctx) => {
@@ -93,6 +96,7 @@ const MilkdownEditor = ({ content }: MarkdownRendererProps) => {
 				ctx.set(defaultValueCtx, content);
 			})
 			.use(commonmark)
+			.use($view(codeBlockSchema.node, () => nodeViewFactory({ component: CustomCodeBlock })))
 			.use(history);
 	});
 

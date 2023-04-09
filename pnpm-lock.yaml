@@ -25,6 +25,9 @@ dependencies:
   '@milkdown/transformer':
     specifier: ^7.1.1
     version: 7.1.1(@milkdown/prose@7.1.1)
+  '@milkdown/utils':
+    specifier: ^7.1.1
+    version: 7.1.1(@milkdown/core@7.1.1)(@milkdown/ctx@7.1.1)(@milkdown/prose@7.1.1)(@milkdown/transformer@7.1.1)
   '@prisma/client':
     specifier: ^4.12.0
     version: 4.12.0(prisma@4.12.0)

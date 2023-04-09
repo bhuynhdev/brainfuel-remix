@@ -25,7 +25,7 @@ const CodeQuiz = ({ node }: CodeQuizProps): JSX.Element => {
 				name="quiz-answer"
 				rows={5}
 				spellCheck="false"
-				className={cn('bg-slate-200 rounded-lg px-4 py-5 w-full border-2', {
+				className={cn('w-full rounded-lg border-2 bg-slate-200 px-4 py-5', {
 					'border-green-600': answerStatus === 'correct',
 					'border-red-500': answerStatus === 'wrong',
 				})}
@@ -35,7 +35,7 @@ const CodeQuiz = ({ node }: CodeQuizProps): JSX.Element => {
 					setAnswerStatus('idle');
 				}}
 			/>
-			<button type="submit" className="absolute right-[7%] top-2 bg-purple-300 py-1 px-3 rounded-lg font-sans">
+			<button type="submit" className="absolute right-[7%] top-2 rounded-lg bg-purple-300 py-1 px-3 font-sans">
 				Check
 			</button>
 		</form>
