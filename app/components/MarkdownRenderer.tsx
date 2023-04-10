@@ -86,7 +86,6 @@ const MilkdownEditor = React.memo(({ content, onMarkdownChange }: MarkdownRender
 
 	const editor = useEditor(
 		(root) => {
-			console.log('Create editor');
 			return Editor.make()
 				.config((ctx) => {
 					ctx.set(rootCtx, root);

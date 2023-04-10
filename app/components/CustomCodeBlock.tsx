@@ -1,4 +1,4 @@
-import React, { MouseEventHandler, useRef, useState } from 'react';
+import React, { FormEvent, MouseEventHandler, useRef, useState } from 'react';
 import cn from 'classnames';
 import FlashCards from './FlashCards';
 import CodeQuiz from './CodeQuiz';
@@ -7,8 +7,9 @@ import { useNodeViewContext } from '@prosemirror-adapter/react';
 import { codeBlockSchema } from '@milkdown/preset-commonmark';
 import { expectDomTypeError } from '@milkdown/exception';
 import { $nodeAttr } from '@milkdown/utils';
-import SyntaxHighlighter from 'react-syntax-highlighter';
-import { atomOneDark } from 'react-syntax-highlighter/dist/cjs/styles/hljs';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { atomDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
+import { getPrismLanguage } from '~/utils/misc';
 
 // Extend CodeBlockSchema to support meta string
 /// HTML attributes for code block node.
@@ -43,13 +44,28 @@ const CustomCodeBlock = () => {
 	const [isQuiz, setIsQuiz] = useState((node.attrs.meta as string)?.includes('quiz'));
 	const [quizAnswer, setQuizAnswer] = useState(''); // State to track what the user is typing in the quiz box
 	const quizTextareaRef = useRef<HTMLTextAreaElement>(null);
+	const [answerStatus, setAnswerStatus] = useState<'idle' | 'correct' | 'wrong'>('idle');
 
-	return (
-		<div className={cn(selected ? 'ProseMirror-selectednode' : '', 'not-prose shado my-4 rounded bg-gray-200 p-5')}>
+	const codeBlockValue = node.textContent;
+
+	const checkQuizAnswer: MouseEventHandler<HTMLButtonElement> = (e) => {
+		e.preventDefault();
+		if (!quizTextareaRef.current) {
+			return;
+		}
+		const answer = quizTextareaRef.current.value.trim();
+		const isAnswerCorrect = answer === codeBlockValue;
+		console.log('isAnswerCorrect', isAnswerCorrect);
+		setAnswerStatus(!answer ? 'idle' : isAnswerCorrect ? 'correct' : 'wrong');
+	};
+
+	const ControlBar = () => {
+		return (
 			<div contentEditable="false" suppressContentEditableWarning className="mb-2 flex justify-between">
 				<select
 					className="focus:ring-offset-2s cursor-pointer rounded !border-0 bg-white shadow-sm focus:ring-2"
 					value={node.attrs.language || 'text'}
+					disabled={isQuiz}
 					onChange={(e) => {
 						setAttrs({ language: e.target.value });
 					}}
@@ -69,17 +85,38 @@ const CustomCodeBlock = () => {
 						setAttrs({ meta: isQuiz ? '' : 'quiz' });
 					}}
 				/>
+				<div className="control-buttons flex w-40 justify-end">
+					{isQuiz && (
+						<button
+							type="button"
+							onClick={checkQuizAnswer}
+							className="font-sm rounded border border-gray-200 bg-purple-400 px-4 py-2 shadow-sm focus:ring-2 focus:ring-offset-2"
+						>
+							Check Answer
+						</button>
+					)}
 
-				<button
-					className="inline-flex items-center justify-center rounded border border-gray-200 bg-white px-4 py-2 text-base font-medium leading-6 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-offset-2"
-					onClick={(e) => {
-						e.preventDefault();
-						navigator.clipboard.writeText(node.textContent);
-					}}
-				>
-					Copy
-				</button>
+					{!isQuiz && (
+						<button
+							type="submit"
+							form=""
+							className="rounded border border-gray-200 bg-white px-4 py-2 font-medium shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-offset-2"
+							onClick={(e) => {
+								e.preventDefault();
+								navigator.clipboard.writeText(codeBlockValue);
+							}}
+						>
+							Copy
+						</button>
+					)}
+				</div>
 			</div>
+		);
+	};
+
+	return (
+		<div className={cn(selected ? 'ProseMirror-selectednode' : '', 'not-prose shado my-4 rounded bg-gray-200 p-5')}>
+			<ControlBar />
 			{!isQuiz ? (
 				<div className="relative flex rounded-md bg-[#282a36]">
 					<code
@@ -88,17 +125,21 @@ const CustomCodeBlock = () => {
 						ref={contentRef}
 					/>
 					<SyntaxHighlighter
-						language={node.attrs.language}
-						style={atomOneDark}
-						className="!flex-1 !rounded-xl !bg-transparent !p-5"
+						language={getPrismLanguage(node.attrs.language)}
+						style={atomDark}
+						className="!m-0 !flex-1 !rounded-xl !bg-transparent !p-5 !leading-7"
 						key="no-quiz"
 					>
-						{node.textContent + '\n'}
+						{codeBlockValue + '\n'}
 					</SyntaxHighlighter>
 				</div>
 			) : (
 				<div
-					className="relative flex min-h-[150px] rounded-md bg-[#282a36]"
+					className={cn('relative flex min-h-[150px] rounded-md bg-[#282a36]', {
+						'border-[6px]': answerStatus !== 'idle',
+						'border-green-600': answerStatus === 'correct',
+						'border-red-600': answerStatus === 'wrong',
+					})}
 					tabIndex={0}
 					onKeyDown={() => quizTextareaRef.current?.focus()}
 					onClick={() => quizTextareaRef.current?.focus()}
@@ -108,12 +149,15 @@ const CustomCodeBlock = () => {
 						className="absolute inset-0 resize-none bg-transparent p-5 font-mono text-transparent caret-white outline-none"
 						ref={quizTextareaRef}
 						value={quizAnswer}
-						onChange={(e) => setQuizAnswer(e.target.value)}
+						onChange={(e) => {
+							setQuizAnswer(e.target.value);
+							setAnswerStatus('idle');
+						}}
 					/>
 					<SyntaxHighlighter
 						language={node.attrs.language}
-						style={atomOneDark}
-						className="!flex-1 !overflow-y-auto !bg-transparent !p-5"
+						style={atomDark}
+						className="!m-0 !flex-1 !overflow-y-auto !bg-transparent !p-5 !leading-7"
 						key="yes-quiz"
 					>
 						{quizAnswer + '\n'}
