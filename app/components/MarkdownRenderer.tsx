@@ -5,22 +5,24 @@ import rehypeHighlight from 'rehype-highlight';
 import rehypeSanitize, { defaultSchema, type Options as RehypeSanitizeOptions } from 'rehype-sanitize';
 import remarkDirective from 'remark-directive';
 import remarkDirectiveRehype from 'remark-directive-rehype';
-import { rehypeCodeQuiz } from '~/utils/markdown-plugins';
+import { codeBlockWithMeta, rehypeCodeQuiz } from '~/utils/markdown-plugins';
 import type MDAST from 'mdast';
 import { type Element as HastElement } from 'hast';
-import CustomCodeBlock, { codeBlockWithMeta } from './CustomCodeBlock';
+import CustomCodeBlock from './CustomCodeBlock';
 import { CodeProps } from 'react-markdown/lib/ast-to-react';
 import { Milkdown, MilkdownProvider, useEditor } from '@milkdown/react';
 import { defaultValueCtx, Editor, editorViewOptionsCtx, rootCtx } from '@milkdown/core';
-import { nord } from '@milkdown/theme-nord';
 import { codeBlockSchema, commonmark } from '@milkdown/preset-commonmark';
 import { ClientOnly } from 'remix-utils';
 import { ProsemirrorAdapterProvider, useNodeViewFactory } from '@prosemirror-adapter/react';
 import { history } from '@milkdown/plugin-history';
-import { $view, getMarkdown } from '@milkdown/utils';
+import { $view } from '@milkdown/utils';
+import { listener, listenerCtx } from '@milkdown/plugin-listener';
+import { debounce } from 'lodash';
 
 interface MarkdownRendererProps {
 	content: string;
+	onMarkdownChange: (newMarkdown: string) => void;
 }
 
 const remarkRehypeOptions: RemarkRehypeOptions = {
@@ -79,38 +81,45 @@ const rehypeSanitizeOptions: RehypeSanitizeOptions = {
 // 	);
 // });
 
-const MilkdownEditor = ({ content }: MarkdownRendererProps) => {
+const MilkdownEditor = React.memo(({ content, onMarkdownChange }: MarkdownRendererProps) => {
 	const nodeViewFactory = useNodeViewFactory();
 
-	useEditor((root) => {
-		return Editor.make()
-			.config((ctx) => {
-				ctx.set(rootCtx, root);
-				ctx.set(editorViewOptionsCtx, {
-					attributes: {
-						class: 'prose prose-h1:font-bold w-full max-w-full box-border overflow-hidden p-4',
-					},
-				});
-			})
-			.config((ctx) => {
-				ctx.set(defaultValueCtx, content);
-			})
-			.use(commonmark)
-			.use(codeBlockWithMeta)
-			.use($view(codeBlockSchema.node, () => nodeViewFactory({ component: CustomCodeBlock })))
-			.use(history);
-	});
+	const editor = useEditor(
+		(root) => {
+			console.log('Create editor');
+			return Editor.make()
+				.config((ctx) => {
+					ctx.set(rootCtx, root);
+					ctx.update(editorViewOptionsCtx, (prev) => ({
+						...prev,
+						attributes: {
+							class: 'prose prose-h1:font-bold w-full max-w-full box-border overflow-hidden p-4',
+						},
+					}));
+					ctx.set(defaultValueCtx, content);
+					ctx.get(listenerCtx).markdownUpdated((_, markdown) => {
+						debounce(onMarkdownChange, 100)(markdown);
+					});
+				})
+				.use(commonmark)
+				.use($view(codeBlockSchema.node, () => nodeViewFactory({ component: CustomCodeBlock, stopEvent: () => true })))
+				.use(codeBlockWithMeta)
+				.use(listener)
+				.use(history);
+		},
+		[content]
+	);
 
 	return <Milkdown />;
-};
+});
 
-const MarkdownRenderer = ({ content }: MarkdownRendererProps) => {
+const MarkdownRenderer = ({ content, onMarkdownChange }: MarkdownRendererProps) => {
 	return (
 		<ClientOnly>
 			{() => (
 				<MilkdownProvider>
 					<ProsemirrorAdapterProvider>
-						<MilkdownEditor content={content} />
+						<MilkdownEditor content={content.trim()} onMarkdownChange={onMarkdownChange} />
 					</ProsemirrorAdapterProvider>
 				</MilkdownProvider>
 			)}

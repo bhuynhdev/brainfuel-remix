@@ -1,20 +1,25 @@
 import { SubmitFunction } from '@remix-run/react';
-import { FormEvent, useEffect, useRef, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { LoadedNote } from '~/routes/notes/$id';
 import MarkdownRenderer from './MarkdownRenderer';
+import cn from 'classnames';
 
 type NoteViewerProps = {
 	note: LoadedNote;
 	author: { name: string };
 	showAuthor?: boolean;
+	onChange: (newMarkdown: string) => void;
 };
 
-type NoteEditorProps = NoteViewerProps & {
+type NoteEditorProps = {
+	note: LoadedNote;
+	author: { name: string };
+	showAuthor?: boolean;
 	isEditModeInitial: boolean;
 	submitNoteFn: SubmitFunction;
 };
 
-export function NoteViewer({ note, author, showAuthor = false }: NoteViewerProps) {
+export function NoteViewer({ note, author, showAuthor = false, onChange }: NoteViewerProps) {
 	if (!note) {
 		return <div></div>;
 	}
@@ -24,7 +29,7 @@ export function NoteViewer({ note, author, showAuthor = false }: NoteViewerProps
 			{showAuthor && <p>Author: {author.name}</p>}
 			<p className="mb-4">Last updated {createdAt ? new Date(createdAt).toLocaleString() : Date()}</p>
 			<h1 className="mb-12 text-5xl font-bold">{title || ''}</h1>
-			<MarkdownRenderer content={content} />
+			<MarkdownRenderer content={content} onMarkdownChange={onChange} />
 		</div>
 	);
 }
@@ -44,9 +49,9 @@ export function NoteEditor({ note, author, isEditModeInitial, submitNoteFn }: No
 	// useEffect(() => {
 	// 	const keyMapHandler = (e: KeyboardEvent) => {
 	// 		// Override Control + S to save note
-	// 		if (noteEditFormRef.current && e.key === 's' && (e.metaKey || e.ctrlKey)) {
+	// 		if (e.key === 's' && (e.metaKey || e.ctrlKey)) {
 	// 			e.preventDefault();
-	// 			return submitNoteFn(noteEditFormRef.current);
+	// 			return submitNoteFn(noteEditFormRef.current, { preventScrollReset: true });
 	// 		}
 	// 		// Override Control + Q to Toggle edit mode (and save note)
 	// 		if (e.key === 'q' && (e.metaKey || e.ctrlKey)) {
@@ -62,15 +67,20 @@ export function NoteEditor({ note, author, isEditModeInitial, submitNoteFn }: No
 	// 	};
 	// }, []);
 
+	if (!note) {
+		return <div>Cannot find note</div>;
+	}
+
 	const handleSaveNote = (e: FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		setEditMode(false);
 		submitNoteFn(e.currentTarget);
 	};
 
-	if (!isEditMode) {
-		return (
-			<div className="relative" key={note?.id}>
+	// Edit mode
+	return (
+		<div className={`relative ${isEditMode && 'grid h-full grid-cols-[45%,minmax(0,55%)] gap-10'}`}>
+			{!isEditMode && (
 				<button
 					type="button"
 					onClick={() => setEditMode(true)}
@@ -78,63 +88,61 @@ export function NoteEditor({ note, author, isEditModeInitial, submitNoteFn }: No
 				>
 					Edit
 				</button>
-				<NoteViewer note={note} author={author} />
-			</div>
-		);
-	}
+			)}
+			<NoteViewer note={note} author={author} onChange={(newMarkdown) => setContent(newMarkdown)} key={note.id} />
 
-	// Edit mode
-	return (
-		<div className="relative grid h-full grid-cols-[45%,minmax(0,55%)] gap-10" key={note?.id}>
-			<NoteViewer note={note} author={author} />
+			{isEditMode && (
+				<>
+					<form
+						id="note-form"
+						className="flex w-full flex-col gap-3"
+						method="post"
+						onSubmit={handleSaveNote}
+						ref={noteEditFormRef}
+					>
+						<div>
+							<label htmlFor="note-title-input" className="sr-only">
+								Title:
+							</label>
+							<input
+								type="text"
+								id="note-title-input"
+								name="title"
+								className="border-2 px-2 py-1"
+								value={title}
+								onChange={(e) => setTitle(e.target.value)}
+							/>
+						</div>
+						<textarea
+							key="text-content-input"
+							id="note-content-input"
+							name="content"
+							className="h-full w-full rounded-sm border-2 px-2 py-1 font-mono"
+							value={content}
+							onChange={(e) => setContent(e.target.value)}
+							ref={textAreaRef}
+						></textarea>
+						<input type="hidden" name="_action" value="update" />
+					</form>
 
-			<form
-				id="note-form"
-				className="flex w-full flex-col gap-3"
-				method="post"
-				onSubmit={handleSaveNote}
-				ref={noteEditFormRef}
-			>
-				<div>
-					<label htmlFor="note-title-input" className="sr-only">
-						Title:
-					</label>
-					<input
-						type="text"
-						id="note-title-input"
-						name="title"
-						className="border-2 px-2 py-1"
-						value={title}
-						onChange={(e) => setTitle(e.target.value)}
-					/>
-				</div>
-				<textarea
-					id="note-content-input"
-					name="content"
-					className="h-full w-full rounded-sm border-2 px-2 py-1 font-mono"
-					value={content}
-					onChange={(e) => setContent(e.target.value)}
-					ref={textAreaRef}
-				></textarea>
-				<input type="hidden" name="_action" value="update" />
-			</form>
-
-			<div id="note-editmode-buttons" className="absolute -top-5 right-0 flex flex-row gap-3">
-				<button
-					className="rounded-3xl border-2 border-blue-500 px-6 py-2 text-blue-500"
-					onClick={() => {
-						setEditMode(false);
-						// Reset any changes
-						setContent(note?.content || '');
-						setTitle(note?.title || '');
-					}}
-				>
-					Cancel
-				</button>
-				<button className="rounded-3xl bg-blue-500 px-6 py-2 text-white" type="submit" form="note-form">
-					&#10003; Done
-				</button>
-			</div>
+					<div id="note-editmode-buttons" className="absolute -top-5 right-0 flex flex-row gap-3">
+						<button
+							className="rounded-3xl border-2 border-blue-500 px-6 py-2 text-blue-500"
+							onClick={() => {
+								setEditMode(false);
+								// Reset any changes
+								setContent(note?.content || '');
+								setTitle(note?.title || '');
+							}}
+						>
+							Cancel
+						</button>
+						<button className="rounded-3xl bg-blue-500 px-6 py-2 text-white" type="submit" form="note-form">
+							&#10003; Done
+						</button>
+					</div>
+				</>
+			)}
 		</div>
 	);
 }

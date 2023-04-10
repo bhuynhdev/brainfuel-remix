@@ -122,7 +122,8 @@ const Note: React.FC = () => {
 
 	// If user is not logged in, or user is not note's author, then View only
 	if (!user || note.authorId !== user.id) {
-		return <NoteViewer note={note} author={{ name: author?.username || 'Unknown' }} showAuthor />;
+		// return <NoteEditor note={note} author={{ name: author?.username || 'Unknown' }} showAuthor />;
+		return <div>In progress</div>;
 	}
 
 	return (

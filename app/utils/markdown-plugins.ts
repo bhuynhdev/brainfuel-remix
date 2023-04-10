@@ -1,6 +1,8 @@
 import { type Plugin } from 'unified';
 import HAST from 'hast';
 import { visit } from 'unist-util-visit';
+import { codeBlockAttr, codeBlockSchema } from '@milkdown/preset-commonmark';
+import { expectDomTypeError } from '@milkdown/exception';
 
 export const rehypeCodeQuiz: Plugin<Array<{}>, HAST.Root> = () => {
 	return (tree) => {
@@ -36,3 +38,58 @@ export const rehypeCodeQuiz: Plugin<Array<{}>, HAST.Root> = () => {
 		});
 	};
 };
+
+export const codeBlockWithMeta = codeBlockSchema.extendSchema((prev) => {
+	return (ctx) => {
+		const baseSchema = prev(ctx);
+		return {
+			...baseSchema,
+			attrs: {
+				...baseSchema.attrs,
+				meta: { default: '' },
+			},
+			parseMarkdown: {
+				match: ({ type }) => type === 'code',
+				runner: (state, node, type) => {
+					const language = node.lang as string;
+					const meta = node.meta as string;
+					const value = node.value as string;
+					state.openNode(type, { language, meta });
+					if (value) state.addText(value);
+					state.closeNode();
+				},
+			},
+			toMarkdown: {
+				match: (node) => node.type.name === 'code_block',
+				runner: (state, node) => {
+					state.addNode('code', undefined, node.content.firstChild?.text || '', {
+						lang: node.attrs.language,
+						meta: node.attrs.meta,
+					});
+				},
+			},
+			parseDOM: [
+				{
+					tag: 'pre',
+					preserveWhitespace: 'full',
+					getAttrs: (dom) => {
+						if (!(dom instanceof HTMLElement)) throw expectDomTypeError(dom);
+						return { language: dom.dataset.language, meta: dom.dataset.meta };
+					},
+				},
+			],
+			toDOM: (node) => {
+				const attr = ctx.get(codeBlockAttr.key)(node);
+				return [
+					'pre',
+					{
+						...attr.pre,
+						'data-language': node.attrs.language,
+						'data-meta': node.attrs.meta,
+					},
+					['code', attr.code, 0],
+				];
+			},
+		};
+	};
+});
