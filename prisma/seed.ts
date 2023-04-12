@@ -63,10 +63,10 @@ For even more fun, add some flashcards to make learning more interactive ([highe
 Start a question with \`?>\` mark, and designate answers with \`>\`
 
 \`\`\`qa
-?> What is circumference of a circle?
-> 2*pi*R
+?? What is circumference of a circle?
+?> 2*pi*R
 
-?> What is area of a circle?
-> pi*R^2
+?? What is area of a circle?
+?> pi*R^2
 \`\`\`
 `;
