@@ -93,6 +93,14 @@ const Note: React.FC = () => {
 	const [searchParams, setSearchParams] = useSearchParams();
 	const submit = useSubmit();
 
+	const submitNote = (title: string, content: string) => {
+		const formData = new FormData();
+		formData.set('content', content);
+		formData.set('title', title);
+		formData.set('_action', 'update');
+		submit(formData, { method: 'post' });
+	};
+
 	useEffect(() => {
 		// Remove the "edit" searchParams that get passed when a new note is created
 		// This way, when user naviagates backward, they don't unexpectedly open up the Edit panel
@@ -131,7 +139,7 @@ const Note: React.FC = () => {
 			note={note}
 			author={{ name: user.username }}
 			isEditModeInitial={editMode}
-			submitNoteFn={submit}
+			submitNoteFn={submitNote}
 			key={note?.id || 'undefined'}
 		/>
 	);

@@ -6,7 +6,7 @@ import FlashcardViewer from './FlashcardViewer';
 export const FlashcardCodeBlock = ({ nodeViewContext }: { nodeViewContext: NodeViewContext }) => {
 	const { node, setAttrs, selected } = nodeViewContext;
 	const codeInput = useRef<HTMLTextAreaElement>(null);
-	const [currentTab, setCurrentTab] = useState<'preview' | 'source'>('source');
+	const [currentTab, setCurrentTab] = useState<'preview' | 'source'>('preview');
 	const codeBlockValue = node.attrs.value;
 
 	// useEffect(() => {
