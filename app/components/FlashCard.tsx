@@ -1,5 +1,4 @@
-import { useInstance } from '@milkdown/react';
-import { type NodeViewContext, useNodeViewContext } from '@prosemirror-adapter/react';
+import { type NodeViewContext } from '@prosemirror-adapter/react';
 import * as Tabs from '@radix-ui/react-tabs';
 import { useRef, useState } from 'react';
 import FlashcardViewer from './FlashcardViewer';
@@ -31,20 +30,17 @@ export const FlashcardCodeBlock = ({ nodeViewContext }: { nodeViewContext: NodeV
 					setCurrentTab(value as 'preview' | 'source');
 				}}
 			>
-				<Tabs.List className="text-center text-gray-500">
+				<Tabs.List className="text-center text-gray-700">
 					<div className="-mb-px flex flex-wrap">
 						<Tabs.Trigger
 							value="preview"
-							className="inline-block rounded-t-lg border-b-2 border-transparent p-4 hover:border-gray-300 hover:text-gray-600 "
+							className="inline-block p-4 hover:font-medium data-[state=active]:font-bold data-[state=active]:text-sky-700"
 						>
 							Preview
 						</Tabs.Trigger>
 						<Tabs.Trigger
 							value="source"
-							className={[
-								'inline-block rounded-t-lg border-b-2 border-transparent p-4 hover:border-gray-300 hover:text-gray-600 dark:hover:text-gray-300',
-								currentTab === 'source' ? 'text-nord9' : '',
-							].join(' ')}
+							className="inline-block p-4 hover:font-medium data-[state=active]:font-bold data-[state=active]:text-sky-700"
 						>
 							Source
 						</Tabs.Trigger>
@@ -55,7 +51,7 @@ export const FlashcardCodeBlock = ({ nodeViewContext }: { nodeViewContext: NodeV
 				</Tabs.Content>
 				<Tabs.Content value="source" className="relative">
 					<textarea
-						className="block h-48 w-full rounded bg-slate-800 p-5 font-mono text-gray-50 caret-white"
+						className="block h-48 w-full rounded-md bg-slate-800 p-5 font-mono text-gray-50 caret-white"
 						defaultValue={codeBlockValue}
 						ref={codeInput}
 					/>

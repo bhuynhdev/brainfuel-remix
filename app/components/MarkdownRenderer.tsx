@@ -19,8 +19,6 @@ import { history } from '@milkdown/plugin-history';
 import { $view } from '@milkdown/utils';
 import { listener, listenerCtx } from '@milkdown/plugin-listener';
 import { debounce } from 'lodash';
-import { FlashcardCodeBlock } from './Flashcard';
-import { MilkdownPlugin } from '@milkdown/ctx';
 
 interface MarkdownRendererProps {
 	content: string;

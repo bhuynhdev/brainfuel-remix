@@ -37,13 +37,13 @@ export const CustomCodeBlock = () => {
 const langs = ['text', 'typescript', 'javascript', 'html', 'css', 'json', 'markdown', 'python'];
 
 const CodeBlockWithQuiz = ({ nodeViewContext }: { nodeViewContext: NodeViewContext }) => {
-	const { contentRef, selected, node, setAttrs } = useNodeViewContext();
+	const { contentRef, selected, node, setAttrs } = nodeViewContext;
 	const [isQuiz, setIsQuiz] = useState((node.attrs.meta as string)?.includes('quiz'));
 	const [quizAnswer, setQuizAnswer] = useState(''); // State to track what the user is typing in the quiz box
 	const quizTextareaRef = useRef<HTMLTextAreaElement>(null);
 	const [answerStatus, setAnswerStatus] = useState<'idle' | 'correct' | 'wrong'>('idle');
 
-	const codeBlockValue = node.textContent;
+	const codeBlockValue = node.attrs.value;
 
 	const checkQuizAnswer: MouseEventHandler<HTMLButtonElement> = (e) => {
 		e.preventDefault();

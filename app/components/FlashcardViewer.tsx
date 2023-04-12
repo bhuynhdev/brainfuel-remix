@@ -60,7 +60,7 @@ const FlashcardViewer = ({ content }: { content: string }) => {
 
 	return (
 		<>
-			<div className="relative min-h-[200px] font-sans">
+			<div className="relative min-h-[100px] font-sans">
 				{/* <button
 					type="button"
 					className="absolute right-[7%] top-2 bg-purple-300 py-1 px-3 rounded-lg font-sans"
