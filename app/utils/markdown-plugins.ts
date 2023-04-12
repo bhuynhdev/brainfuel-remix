@@ -41,6 +41,9 @@ import type { MilkdownPlugin } from '@milkdown/ctx';
 // 	};
 // };
 
+// List of special codeblock languages used for special blocks
+const SPECIAL_LANGUAGE_LIST = ['cw', 'qa'];
+
 export const codeBlockWithMeta = codeBlockSchema.extendSchema((prev) => {
 	return (ctx) => {
 		const baseSchema = prev(ctx);
@@ -65,8 +68,15 @@ export const codeBlockWithMeta = codeBlockSchema.extendSchema((prev) => {
 			toMarkdown: {
 				match: (node) => node.type.name === 'code_block',
 				runner: (state, node) => {
-					console.log('toMarkdown', node);
-					state.addNode('code', undefined, node.content.firstChild?.text || '', {
+					// This `if` is because normal code block use `contentRef` to directly edit the code text,
+					// so we get the new value using `node.content.firstChild?.text`
+					// In contrast, for special `qa` flashcard code blocks, we use a textarea and update the `node.attrs.value`
+					// without changing the underlying content
+					let value = node.content.firstChild?.text;
+					if (node.attrs.language === 'qa') {
+						value = node.attrs.value;
+					}
+					state.addNode('code', undefined, value || '', {
 						lang: node.attrs.language,
 						meta: node.attrs.meta,
 					});

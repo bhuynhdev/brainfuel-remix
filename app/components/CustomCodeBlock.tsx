@@ -19,14 +19,8 @@ export const codeBlockAttr = $nodeAttr('codeBlock', () => ({
 	code: {},
 }));
 
-interface CustomCodeBlockProps extends AugmentedCodeProps {}
-
-// List of special codeblock languages used for special blocks
-const SPECIAL_LANGUAGE_LIST = ['cw', 'qa'];
-
 export const CustomCodeBlock = () => {
 	const nodeViewContext = useNodeViewContext();
-	console.log(nodeViewContext.node);
 	const language = nodeViewContext.node.attrs.language || 'text';
 	if (language === 'qa') {
 		return <FlashcardCodeBlock nodeViewContext={nodeViewContext} />;
@@ -43,7 +37,7 @@ const CodeBlockWithQuiz = ({ nodeViewContext }: { nodeViewContext: NodeViewConte
 	const quizTextareaRef = useRef<HTMLTextAreaElement>(null);
 	const [answerStatus, setAnswerStatus] = useState<'idle' | 'correct' | 'wrong'>('idle');
 
-	const codeBlockValue = node.attrs.value;
+	const codeBlockValue = node.textContent;
 
 	const checkQuizAnswer: MouseEventHandler<HTMLButtonElement> = (e) => {
 		e.preventDefault();
