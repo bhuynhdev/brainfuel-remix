@@ -1,4 +1,4 @@
-import { ActionArgs, json, LinksFunction, LoaderArgs, redirect, Response } from '@remix-run/node';
+import { ActionArgs, json, LinksFunction, LoaderArgs, MetaFunction, redirect, Response } from '@remix-run/node';
 import { Link, useLoaderData, useSearchParams, useSubmit } from '@remix-run/react';
 import React, { useEffect } from 'react';
 import { NoteEditor, NoteViewer } from '~/components/NoteEditor';
@@ -7,6 +7,12 @@ import flashCardStyles from '~/styles/flashcard.css';
 import { db } from '~/utils/db.server';
 import { getUser, getUserId, requireUser } from '~/utils/session.server';
 import themeNordMilkdown from '@milkdown/theme-nord/style.css';
+
+export const meta: MetaFunction<typeof loader> = ({ data }) => ({
+	charset: 'utf-8',
+	title: data.note?.title || 'BrainFuel note',
+	viewport: 'width=device-width,initial-scale=1',
+});
 
 export const links: LinksFunction = () => {
 	return [
