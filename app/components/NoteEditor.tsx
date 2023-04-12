@@ -1,5 +1,5 @@
 import { SubmitFunction } from '@remix-run/react';
-import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
+import { FormEvent, MouseEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { LoadedNote } from '~/routes/notes/$id';
 import MarkdownRenderer from './MarkdownRenderer';
 import cn from 'classnames';
@@ -16,7 +16,7 @@ type NoteEditorProps = {
 	author: { name: string };
 	showAuthor?: boolean;
 	isEditModeInitial: boolean;
-	submitNoteFn: SubmitFunction;
+	submitNoteFn: (title: string, content: string) => void;
 };
 
 export function NoteViewer({ note, author, showAuthor = false, onChange }: NoteViewerProps) {
@@ -71,23 +71,28 @@ export function NoteEditor({ note, author, isEditModeInitial, submitNoteFn }: No
 		return <div>Cannot find note</div>;
 	}
 
-	const handleSaveNote = (e: FormEvent<HTMLFormElement>) => {
+	const handleSaveNote = (e: MouseEvent<HTMLButtonElement> | FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		setEditMode(false);
-		submitNoteFn(e.currentTarget);
+		submitNoteFn(title, content);
 	};
 
 	// Edit mode
 	return (
 		<div className={`relative ${isEditMode && 'grid h-full grid-cols-[45%,minmax(0,55%)] gap-10'}`}>
 			{!isEditMode && (
-				<button
-					type="button"
-					onClick={() => setEditMode(true)}
-					className="absolute -top-5 right-0 rounded-3xl bg-blue-500 px-6 py-2 text-xl font-bold uppercase tracking-wide text-white"
-				>
-					Edit
-				</button>
+				<div className="absolute -top-5 right-0 flex gap-2">
+					<button
+						type="button"
+						onClick={() => setEditMode(true)}
+						className="rounded-3xl border-2 border-blue-500 px-6 py-2 text-blue-500"
+					>
+						Source
+					</button>
+					<button className="rounded-3xl bg-blue-500 px-6 py-2 text-white" type="submit" form="note-form">
+						&#10003; Save
+					</button>
+				</div>
 			)}
 			<NoteViewer note={note} author={author} onChange={(newMarkdown) => setContent(newMarkdown)} key={note.id} />
 
@@ -131,14 +136,14 @@ export function NoteEditor({ note, author, isEditModeInitial, submitNoteFn }: No
 							onClick={() => {
 								setEditMode(false);
 								// Reset any changes
-								setContent(note?.content || '');
-								setTitle(note?.title || '');
+								// setContent(note?.content || '');
+								// setTitle(note?.title || '');
 							}}
 						>
-							Cancel
+							Close
 						</button>
 						<button className="rounded-3xl bg-blue-500 px-6 py-2 text-white" type="submit" form="note-form">
-							&#10003; Done
+							&#10003; Save
 						</button>
 					</div>
 				</>
