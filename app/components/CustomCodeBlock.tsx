@@ -1,15 +1,16 @@
 import React, { FormEvent, MouseEventHandler, useRef, useState } from 'react';
 import cn from 'classnames';
-import FlashCards from './FlashCards';
+import FlashcardViewer from './FlashcardViewer';
 import CodeQuiz from './CodeQuiz';
 import { AugmentedCodeProps } from './MarkdownRenderer';
-import { useNodeViewContext } from '@prosemirror-adapter/react';
+import { type NodeViewContext, useNodeViewContext } from '@prosemirror-adapter/react';
 import { codeBlockSchema } from '@milkdown/preset-commonmark';
 import { expectDomTypeError } from '@milkdown/exception';
 import { $nodeAttr } from '@milkdown/utils';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { atomDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 import { getPrismLanguage } from '~/utils/misc';
+import { FlashcardCodeBlock } from './Flashcard';
 
 // Extend CodeBlockSchema to support meta string
 /// HTML attributes for code block node.
@@ -20,26 +21,22 @@ export const codeBlockAttr = $nodeAttr('codeBlock', () => ({
 
 interface CustomCodeBlockProps extends AugmentedCodeProps {}
 
-// const CustomCodeBlockOld: React.FC<CustomCodeBlockProps> = ({ node, inline, children, className, ...props }) => {
-// 	const language = node.data?.lang || 'plaintext';
-// 	if (language === 'qa') {
-// 		return <FlashCards node={node} />;
-// 	}
-// 	if (node.data?.meta?.includes('quiz')) {
-// 		return <CodeQuiz node={node} />;
-// 	}
-// 	// Normal code block
-// 	return (
-// 		<code {...props} className={cn(className, 'relative')}>
-// 			{!inline && <span className="absolute left-3 top-0 text-[10px] uppercase">{node.properties?.dataLang}</span>}
-// 			{children}
-// 		</code>
-// 	);
-// };
+// List of special codeblock languages used for special blocks
+const SPECIAL_LANGUAGE_LIST = ['cw', 'qa'];
+
+export const CustomCodeBlock = () => {
+	const nodeViewContext = useNodeViewContext();
+	console.log(nodeViewContext.node);
+	const language = nodeViewContext.node.attrs.language || 'text';
+	if (language === 'qa') {
+		return <FlashcardCodeBlock nodeViewContext={nodeViewContext} />;
+	}
+	return <CodeBlockWithQuiz nodeViewContext={nodeViewContext} />;
+};
 
 const langs = ['text', 'typescript', 'javascript', 'html', 'css', 'json', 'markdown', 'python'];
 
-const CustomCodeBlock = () => {
+const CodeBlockWithQuiz = ({ nodeViewContext }: { nodeViewContext: NodeViewContext }) => {
 	const { contentRef, selected, node, setAttrs } = useNodeViewContext();
 	const [isQuiz, setIsQuiz] = useState((node.attrs.meta as string)?.includes('quiz'));
 	const [quizAnswer, setQuizAnswer] = useState(''); // State to track what the user is typing in the quiz box
@@ -195,4 +192,4 @@ function ToggleButton({
 	);
 }
 
-export default CustomCodeBlock;
+export default CodeBlockWithQuiz;

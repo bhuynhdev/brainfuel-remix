@@ -1,10 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { type Element } from 'hast';
 import cn from 'classnames';
-
-interface FlashCardProps {
-	node: Element;
-}
 
 /**
  * Parse the flashcard block content using regular expression
@@ -12,11 +7,11 @@ interface FlashCardProps {
  * ?> To start a question
  * > Answer to question
  */
-// Match everything between ?> and (> or end-of-text)
+// Match everything between ?? and ?> or end-of-text
 // Since Js does not support the End of text \Z, we emulate \Z with $(?![\r\n]) https://stackoverflow.com/a/73843315/14426823
-const QUESTION_REGEX = /^\?>(?<=\?>)(.*?)(?=(?:\n>|$(?![\r\n])))/gms;
-// Match everything between > and (?> or end-of-text)
-const ANSWER_REGEX = /^>(?<=>)(.*?)(?=(?:\n\?>|$(?![\r\n])))/gms;
+const QUESTION_REGEX = /^\?\?(?<=\?\?)(.*?)(?=(?:\n\?>|$(?![\r\n])))/gms;
+// Match everything between ?> and ?? or end-of-text
+const ANSWER_REGEX = /^\?>(?<=\?>)(.*?)(?=(?:\n\?\?|$(?![\r\n])))/gms;
 
 /**
  * Zip to string array together, so their values are interleaving
@@ -44,11 +39,10 @@ function zip(arr1: string[], arr2: string[]) {
 	return [result, Math.max(len1, len2)] as const;
 }
 
-const FlashCards: React.FC<FlashCardProps> = ({ node }) => {
+const FlashcardViewer = ({ content }: { content: string }) => {
 	const modalRef = useRef<HTMLDialogElement>(null);
 	const [isCardFront, setIsCardFront] = useState(true);
 	const [cardIndex, setCardIndex] = useState(0);
-	const content = (node.data?.value as string) || '';
 	// Each entry in questions can be deemed as an array, where the 2nd item (and above) are the captured group
 	// Since we only have 1 capture group, the data we want is in the 2nd item
 	const questions = Array.from(content.matchAll(QUESTION_REGEX)).map((result) => result[1].trim());
@@ -66,7 +60,7 @@ const FlashCards: React.FC<FlashCardProps> = ({ node }) => {
 
 	return (
 		<>
-			<div className="relative font-sans">
+			<div className="relative min-h-[200px] font-sans">
 				{/* <button
 					type="button"
 					className="absolute right-[7%] top-2 bg-purple-300 py-1 px-3 rounded-lg font-sans"
@@ -78,7 +72,7 @@ const FlashCards: React.FC<FlashCardProps> = ({ node }) => {
 					<button
 						onClick={flipCard}
 						aria-label="flip"
-						className="flashcard__flipbtn absolute text-2xl right-2 top-2 z-10"
+						className="flashcard__flipbtn absolute right-2 top-2 z-10 text-2xl"
 					>
 						<span aria-hidden="true">🔄</span>
 					</button>
@@ -87,7 +81,7 @@ const FlashCards: React.FC<FlashCardProps> = ({ node }) => {
 						<>
 							<button
 								aria-label="next"
-								className="absolute top-24 z-10 right-1 text-xl"
+								className="absolute top-24 right-1 z-10 text-xl"
 								onClick={() => {
 									setCardIndex((idx) => (idx + 1) % qaPairCount);
 									setIsCardFront(true);
@@ -97,7 +91,7 @@ const FlashCards: React.FC<FlashCardProps> = ({ node }) => {
 							</button>
 							<button
 								aria-label="previous"
-								className="absolute top-24 z-10 left-1 text-xl"
+								className="absolute top-24 left-1 z-10 text-xl"
 								onClick={() => {
 									setCardIndex((idx) => (idx + qaPairCount - 1) % qaPairCount);
 									setIsCardFront(true);
@@ -111,11 +105,11 @@ const FlashCards: React.FC<FlashCardProps> = ({ node }) => {
 						<div key={index} className={cn('flashcard__content bg-slate-200')}>
 							<div className="flashcard__skeleton invisible"></div>
 							<div className={cn('flashcard__front', { flipped: !isCardFront })}>
-								<p className="font-bold text-lg">Question</p>
+								<p className="text-lg font-bold">Question {cardIndex + 1}</p>
 								<p className="ml-4">{currentQuestion}</p>
 							</div>
 							<div className={cn('flashcard__back', { flipped: !isCardFront })}>
-								<p className="font-bold text-lg">Answer</p>
+								<p className="text-lg font-bold">Answer {cardIndex + 1}</p>
 								<p className="ml-4">{currentAnswer}</p>
 							</div>
 						</div>
@@ -135,4 +129,4 @@ const FlashCards: React.FC<FlashCardProps> = ({ node }) => {
 	);
 };
 
-export default FlashCards;
+export default FlashcardViewer;

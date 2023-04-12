@@ -1,14 +1,14 @@
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 import ReactMarkdown, { type Components as ReactMarkdownComponentsOptions } from 'react-markdown';
 import { defaultHandlers, type Options as RemarkRehypeOptions } from 'remark-rehype';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeSanitize, { defaultSchema, type Options as RehypeSanitizeOptions } from 'rehype-sanitize';
 import remarkDirective from 'remark-directive';
 import remarkDirectiveRehype from 'remark-directive-rehype';
-import { codeBlockWithMeta, rehypeCodeQuiz } from '~/utils/markdown-plugins';
+import { codeBlockWithMeta } from '~/utils/markdown-plugins';
 import type MDAST from 'mdast';
 import { type Element as HastElement } from 'hast';
-import CustomCodeBlock from './CustomCodeBlock';
+import CodeBlockWithQuiz, { CustomCodeBlock } from './CustomCodeBlock';
 import { CodeProps } from 'react-markdown/lib/ast-to-react';
 import { Milkdown, MilkdownProvider, useEditor } from '@milkdown/react';
 import { defaultValueCtx, Editor, editorViewOptionsCtx, rootCtx } from '@milkdown/core';
@@ -19,6 +19,8 @@ import { history } from '@milkdown/plugin-history';
 import { $view } from '@milkdown/utils';
 import { listener, listenerCtx } from '@milkdown/plugin-listener';
 import { debounce } from 'lodash';
+import { FlashcardCodeBlock } from './Flashcard';
+import { MilkdownPlugin } from '@milkdown/ctx';
 
 interface MarkdownRendererProps {
 	content: string;
@@ -46,10 +48,10 @@ const remarkRehypeOptions: RemarkRehypeOptions = {
 type AugmentedCodeNode = HastElement & { data?: { value?: string; lang?: string; meta?: string } };
 export type AugmentedCodeProps = CodeProps & { node: AugmentedCodeNode };
 
-const componentsOptions: ReactMarkdownComponentsOptions = {
-	// The "inline" prop isn't part of normal HTML attributes
-	code: (props) => <CustomCodeBlock {...(props as AugmentedCodeProps)} />,
-};
+// const componentsOptions: ReactMarkdownComponentsOptions = {
+// 	// The "inline" prop isn't part of normal HTML attributes
+// 	code: (props) => <CodeBlockWithQuiz {...(props as AugmentedCodeProps)} />,
+// };
 
 // Use rehype-sanitize with rehype-highlight: https://github.com/rehypejs/rehype-sanitize#example-syntax-highlighting
 const rehypeSanitizeOptions: RehypeSanitizeOptions = {
