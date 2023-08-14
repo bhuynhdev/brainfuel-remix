@@ -1,6 +1,7 @@
 /** @type {import('@remix-run/dev').AppConfig} */
 module.exports = {
 	ignoredRouteFiles: ['**/.*'],
+	serverModuleFormat: "cjs",
 	// appDirectory: "app",
 	// assetsBuildDirectory: "public/build",
 	// serverBuildPath: "build/index.js",
@@ -46,8 +47,10 @@ module.exports = {
 		'@prosemirror-adapter/react',
 		'@prosemirror-adapter/core',
 		'nanoid',
+		'escape-string-regexp'
 	],
+	tailwind: true,
 	future: {
-		unstable_tailwind: true,
+		v2_dev: true,
 	},
 };
